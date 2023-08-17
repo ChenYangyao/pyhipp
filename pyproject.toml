@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyhipp"
+version = "0.0.1"
+authors = [
+  { name="Yangyao Chen", email="yangyaochen.astro@foxmail.com" },
+]
+description = "Modern Python toolkit for HPC"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy", "h5py", "scipy", "astropy", "pyyaml", "mpi4py", "matplotlib", 
+    "scikit-learn", "pandas", "pytest>=7.0.0"
+]
+
+[project.urls]
+Repository = "https://github.com/ChenYangyao/pyhipp.git"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = [
+  ".", "src"
+]
