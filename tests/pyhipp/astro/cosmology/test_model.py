@@ -30,5 +30,5 @@ def test_simple_repr():
 def test_distances():
     cosm = model.predefined['tng']
     z = [0., 1., 2., 3., 4.]
-    d = cosm.distances.comoving_at(z)
-    print(d)
+    d = cosm.distances.comoving_at(z)   # => [0., 2300.371, 3597.988, ...]
+    print(d)        
