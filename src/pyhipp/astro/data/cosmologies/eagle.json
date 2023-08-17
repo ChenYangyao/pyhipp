@@ -1,0 +1,15 @@
+{
+    "name":         "eagle",
+    "measurement":  "Planck2013",
+    "data_dir":     "eagle",
+    "parameters": {
+        "hubble":   0.6777,
+        "omega_m0": 0.307,
+        "omega_l0": 0.693,
+        "omega_b0": 0.0482519,
+        "sigma_8":  0.8288,
+        "n_spec":   0.9611,
+        "t_cmb":    2.7255,
+        "y_helium": 0.248
+    }
+}

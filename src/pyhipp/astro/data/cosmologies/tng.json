@@ -1,0 +1,14 @@
+{
+    "name":         "tng",
+    "measurement":  "Planck2015",
+    "data_dir":     "tng",
+    "parameters": {
+        "hubble":   0.6774,
+        "omega_m0": 0.3089,
+        "omega_l0": 0.6911,
+        "omega_b0": 0.0486,
+        "sigma_8":  0.8159,
+        "n_spec":   0.9667,
+        "t_cmb":    2.7255
+    }
+}
