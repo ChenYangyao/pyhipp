@@ -85,7 +85,12 @@ class Num:
         return np.linalg.norm(x, axis=axis, keepdims=keepdims)
     
     @staticmethod
-    def normalize(x, axis=-1, lo=1.0e-10):
+    def normalize(x, axis=-1, lo=1.0e-10, inplace=False):
         x = np.asarray(x)
         n = Num.norm(x, axis=axis, keepdims=True)
-        return Num.safe_div(x, n, lo=lo)
+        n = np.clip(n, lo, None, out=n) 
+        if inplace:
+            x /= n
+        else:
+            x = x / n
+        return x
