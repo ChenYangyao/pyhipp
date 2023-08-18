@@ -2,6 +2,7 @@ from __future__ import annotations
 from numpy import random as npr
 from typing import Union
 import numpy as np
+from ..core.dataproc.frame import Polar
 from ..core import dataproc as dp
 
 class Rng:
@@ -54,9 +55,15 @@ class Rng:
         theta = np.arccos(cos_theta)                   # [0, pi]
         
         if cartesian:
-            return dp.frame.Polor.unit_vec_to_cart(theta, phi, stack=stack)
+            return Polar.unit_vec_to_cart(theta, phi, stack=stack)
         
         out = theta, phi
         if stack:
             out = np.stack(out, axis=-1)
         return out
+    
+    def uniform_circle(self, size=None, stack=True, cartesian=True):
+        theta = self.uniform(0., 2.0*np.pi, size=size)
+        if not cartesian:
+            return theta
+        return Polar.unit_vec_to_cart_2d(theta, stack=stack)
