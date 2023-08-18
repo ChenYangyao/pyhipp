@@ -1,8 +1,9 @@
 from __future__ import annotations
+from typing import Any
 import astropy.units, astropy.constants
 from ...core import abc
 
-class UnitSystem(abc.HasName, abc.HasSimpleRepr):
+class UnitSystem(abc.HasName, abc.HasDictRepr):
     '''
     Attrs
     -----
@@ -63,6 +64,12 @@ class UnitSystem(abc.HasName, abc.HasSimpleRepr):
         u_m = U.msun_to_kg * 1.0e10 / hubble
         
         return UnitSystem(u_l, u_t, u_m)
+
+    def to_simple_repr(self) -> dict:
+        return {
+            'u_l': str(self.u_l), 'u_t': str(self.u_t), 
+            'u_m': str(self.u_m), 'u_v': str(self.u_v),
+        }
 
     def __get_const(self):
         c = self.astropy_consts
