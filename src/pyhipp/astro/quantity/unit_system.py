@@ -8,7 +8,7 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
     Attrs
     -----
     Astropy quantities for units, all in S.I. units:
-    u_{l|t|m|v|gravity_constant}
+    u_{l|t|m|v|gravity_constant|density|big_hubble}
     
     Python scalar values:
     u_v_to_kmps                        -- u_v / (km/s)
@@ -39,7 +39,7 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
         u_v = u_l / u_t
         u_gravity_constant = u_l**3 / u_t**2 / u_m
         u_density = u_m / u_l**3
-        
+        u_big_hubble = 1. / u_t
         u_v_to_kmps = self.__conv_coef(u_v, u.km / u.s)
         
         self.u_l = u_l
@@ -48,6 +48,7 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
         self.u_v = u_v
         self.u_gravity_constant = u_gravity_constant
         self.u_density = u_density
+        self.u_big_hubble = u_big_hubble
         
         self.u_v_to_kmps = u_v_to_kmps
         
