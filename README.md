@@ -4,7 +4,7 @@
 [![Workflow Status](https://img.shields.io/github/actions/workflow/status/ChenYangyao/pyhipp/python-package.yml)](https://github.com/ChenYangyao/pyhipp/actions/workflows/python-package.yml)
 [![MIT License](https://img.shields.io/badge/License-MIT-blue)](https://github.com/ChenYangyao/pyhipp/blob/master/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/pyhipp)](https://pypi.org/project/pyhipp/)
-
+[![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 
 PyHIPP is a computational toolkit, designed mainly for astronomical researches.
 We pre-release this package, as our other projects depend extensively on it.
