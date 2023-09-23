@@ -1,6 +1,6 @@
 from .runtime_config import RuntimeConfig
 from .abc import MplObj
-from .color import Color
+from .color import Color, ColorSeq
 from .axes import Axes, AxesArray
 from .figure import Figure
 from .shortcut import figure, subplots, subfigures, savefig, show, close

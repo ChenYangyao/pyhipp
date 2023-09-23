@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .abc import mpl_colors
+from .abc import mpl_colors, plt
 from typing import Tuple, Any, Union
 
 class Color:
@@ -32,4 +32,20 @@ class Color:
             rgba = mpl_colors.to_rgba(c)
         return rgba
     
+_predefined_color_seqs = {
+    'dark2': plt.get_cmap('Dark2').colors,
+    'set1': plt.get_cmap('Set1').colors,
+}
+    
+class ColorSeq:
+    def __init__(self, colors: list[Color.ColorSpec]) -> None:
+        self.colors = list(Color(c) for c in colors)
+        
+    @staticmethod
+    def predefined(name: str = 'dark2') -> ColorSeq:
+        colors = _predefined_color_seqs[name]
+        return ColorSeq(colors)
+        
+    def get_rgba(self) -> list[Color.RgbaSpec]:
+        return [c.get_rgba() for c in self.colors]
     
