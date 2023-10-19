@@ -1,6 +1,6 @@
 from __future__ import annotations
-from .abc import mpl_colors, plt
-from typing import Tuple, Any, Union
+from .abc import mpl_colors, plt, MplObj, mpl_cm
+from typing import Tuple, Any, Union, Self
 
 class Color:
     
@@ -48,4 +48,18 @@ class ColorSeq:
         
     def get_rgba(self) -> list[Color.RgbaSpec]:
         return [c.get_rgba() for c in self.colors]
+
+class Normalize(MplObj[mpl_colors.Normalize]):
+    pass
+        
+class Colormap(MplObj[mpl_colors.Colormap]):    
+    pass
+        
+class ScalarMappable(MplObj[mpl_cm.ScalarMappable]):
     
+    Raw = mpl_cm.ScalarMappable
+    
+    @classmethod
+    def from_cmap(cls, cmap: Colormap, norm: Normalize) -> Self:
+        raw = cls.Raw(cmap=cmap._raw, norm=norm._raw)
+        return cls(raw)
