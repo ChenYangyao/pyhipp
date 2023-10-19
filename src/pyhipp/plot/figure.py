@@ -1,12 +1,14 @@
 from __future__ import annotations
-from typing import Any, Union, Iterator
-from .abc import MplObj, mpl_figure
+from typing import Any, Union, Iterator, Iterable
+from matplotlib.figure import FigureBase
+from .abc import MplObj, mpl_figure, Artist
 from .artist_formatter import SubplotsFormatter, SubFiguresFormatter
 from .axes import Axes, AxesArray
 from ..core.abc import HasSimpleRepr
 import numpy as np
+from .color import ScalarMappable
 
-class FigureBase(MplObj):
+class FigureBase(MplObj[mpl_figure.FigureBase]):
     
     Raw = mpl_figure.FigureBase
     
@@ -14,7 +16,11 @@ class FigureBase(MplObj):
         
         super().__init__(raw, **kw)
         
-        self._raw : FigureBase.Raw
+        self._last_draw = []        
+        
+    @property
+    def last_draw(self) -> Artist:
+        return Artist(self._last_draw[-1])
         
     def subplots(self, n = 1, share = False, extent = None, space = None, 
             ratios = None, mpl_subplot_kw=None, **mpl_gridspec_kw):
@@ -48,6 +54,33 @@ class FigureBase(MplObj):
             out = SubFigureArray(out)
 
         return out
+    
+    def colorbar(self, mappable: ScalarMappable, cax: Axes = None, 
+            ax: Axes|AxesArray|Iterable[Axes] = None,
+            location: str = None, orientation: str = None,
+            fraction: float = 0.1, shrink: float = 1.0, aspect: float = 20,
+            pad: float = 0, ticks: list[float] = None,
+            label: str = None, **mpl_colorbar_kw
+        ):
+        if isinstance(mappable, MplObj):
+            mappable = mappable._raw
+        if isinstance(cax, Axes):
+            cax = cax._raw
+        
+        if isinstance(ax, Axes):
+            ax = ax._raw
+        elif isinstance(ax, AxesArray):
+            ax = [_ax._raw for _ax in ax.to_list()]
+        elif isinstance(ax, Iterable):
+            ax = [(_ax._raw if isinstance(_ax, Axes) else _ax) for _ax in ax]
+        
+        art = self._raw.colorbar(mappable=mappable, cax=cax, ax=ax,
+            location=location, orientation=orientation,
+            fraction=fraction, shrink=shrink, aspect=aspect,
+            pad=pad, ticks=ticks, label=label, **mpl_colorbar_kw)
+        self._last_draw.append(art)
+        
+        return self
 
 class Figure(FigureBase):
     
