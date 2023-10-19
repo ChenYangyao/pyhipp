@@ -32,20 +32,24 @@ class BinnedVolumeDensity:
             range = Bin.parse_p_range_spec(x, range, p_range)
         bins, sub_bins, (x_min, x_max) = Bin.parse_sub_bin_spec(
             bins, sub_bins, range)
-        x = x[ (x>=x_min)&(x<x_max) ] 
+        sel = (x>=x_min)&(x<x_max)
+        dset_in = {'x_to_bin': x[sel]}
+        stats_kw = {'bins': bins, 'sub_bins': sub_bins, 'range': range,
+                    'volume': volume, 'lg_y_pad': policy.lg_y_pad}
+        if weights is not None:
+            dset_in['weights'] = weights[sel] 
+        else:
+            stats_kw['weights'] = None
         
         d_out = Bootstrap.resampled_call(
             BinnedVolumeDensity.__hist,
-            dsets_in = ({'x_to_bin': x},),
+            dsets_in = (dset_in,),
             keys_out = ('h', 'y', 'lg_y'),
-            stats_kw = {'bins': bins, 'sub_bins': sub_bins, 'range': range,
-                        'weights': weights, 'volume': volume, 
-                        'lg_y_pad': policy.lg_y_pad},
+            stats_kw = stats_kw,
             n_resample = n_bootstrap,
             **resample_kw,
             keep_samples = True,
         )
-        
         return d_out
     
     @staticmethod
