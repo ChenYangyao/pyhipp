@@ -160,10 +160,12 @@ class TextFormatter(ArtistFormatter):
     
 class FrameFormatter(ArtistFormatter):
     def __init__(self, lim = None, label = None, scale = None, 
-            ticks = None, ticklabels = None) -> None:
+            ticks = None, ticklabels = None, tick_params = None,
+            label_outer=None) -> None:
         
         super().__init__(lim=lim, label=label, scale=scale, 
-            ticks=ticks, ticklabels=ticklabels)
+            ticks=ticks, ticklabels=ticklabels, tick_params=tick_params, 
+            label_outer=label_outer)
         
     def apply(self, ax: Axes):
         lim = self['lim']
@@ -185,6 +187,15 @@ class FrameFormatter(ArtistFormatter):
         ticklabels = self['ticklabels']
         if ticklabels is not None:
             self.__apply_ticklabels(ax, ticklabels)
+            
+        tick_params = self['tick_params']
+        if tick_params is not None:
+            self.__apply_tick_params(ax, tick_params)
+            
+        label_outer = self['label_outer']
+        if label_outer is not None:
+            if label_outer:
+                ax._raw.label_outer()
             
     def __apply_lim(self, ax: Axes, lim):
         if isinstance(lim, Mapping):
@@ -265,6 +276,22 @@ class FrameFormatter(ArtistFormatter):
             mpl_ax.set_xticklabels(x, **kw)
         if y is not None:
             mpl_ax.set_yticklabels(y, **kw)
+            
+    def __apply_tick_params(self, ax: Axes, tick_params: Mapping):
+        if isinstance(tick_params, Mapping):
+            tick_params = dict(**tick_params)
+            x = tick_params.pop('x', None)
+            y = tick_params.pop('y', None)
+            both = tick_params.pop('both', None)
+            kw = tick_params
+        
+        mpl_ax = ax._raw
+        if x is not None:
+            mpl_ax.tick_params(axis='x', **x, **kw)
+        if y is not None:
+            mpl_ax.tick_params(axis='y', **y, **kw)
+        if both is not None:
+            mpl_ax.tick_params(axis='both', **both, **kw)
             
 class SubplotsFormatter(ArtistFormatter):
     def __init__(self, n = 1, share = False, extent = None, 
