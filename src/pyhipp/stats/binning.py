@@ -3,6 +3,7 @@ from typing import Any, Tuple
 import numpy as np
 from numba import njit
 from pyhipp.core import DataDict, abc
+from functools import cached_property
 
 class Bin:
     @staticmethod
@@ -118,7 +119,10 @@ class Hist1D:
                          'sub_e': _e, 'sub_h': h}) 
 
         
-class Bins(abc.HasSimpleRepr):
+class Bins(abc.HasSimpleRepr, abc.IsImmutable):
+    '''
+    IsImmutable: fields should not be changed after initialization.
+    '''
     def __init__(self, **kw) -> None:
         
         super().__init__(**kw)
@@ -132,6 +136,28 @@ class Bins(abc.HasSimpleRepr):
         '''
         raise NotImplementedError()
     
+    def locate_bound(self, x: np.ndarray, lower=True, upper=True) -> np.ndarray:
+        '''
+        Returned is bound to a valid bin index, ranging in [0, n_bins).
+        '''
+        ind = self.locate(x)
+        lower = 0 if lower else None
+        upper = self.n_bins - 1 if upper else None
+        ind = np.clip(ind, lower, upper)
+        return ind
+    
+    def locate_nearest(self, x: np.ndarray) -> np.ndarray:
+        '''
+        Return a valid edge id, ranging in [0, n_edges), that locates the
+        nearest edge to x.
+        '''
+        ind_l= self.locate_bound(x)
+        ind_r = ind_l + 1
+        e = self.x_edges
+        x_l, x_r = e[ind_l], e[ind_r]
+        d_l, d_r = x - x_l, x_r - x
+        return np.where(d_l < d_r, ind_l, ind_r)
+    
     @property
     def n_bins(self) -> int:
         raise NotImplementedError()
@@ -139,6 +165,11 @@ class Bins(abc.HasSimpleRepr):
     @property
     def x_edges(self) -> np.ndarray:
         raise NotImplementedError()
+    
+    @cached_property
+    def x_centers(self) -> np.ndarray:
+        es = self.x_edges
+        return 0.5 * (es[:-1] + es[1:])
     
 class EqualSpaceBins(Bins):
     def __init__(self, x_range: Tuple[float,float] = (0., 1.), 
@@ -175,9 +206,21 @@ class EqualSpaceBins(Bins):
     def n_bins(self) -> int:
         return self._n_bins
     
-    @property
+    @cached_property
     def x_edges(self) -> np.ndarray:
         return np.linspace(*self._x_range, self._n_bins + 1)
+    
+    @property
+    def x_range(self) -> Tuple[float, float]:
+        return self._x_range
+    
+    @property
+    def x_span(self) -> float:
+        return self._x_span
+    
+    @property
+    def x_step(self) -> float:
+        return self._x_step
         
 class BiSearchBins(Bins):
     def __init__(self, x_edges: np.ndarray, **kw) -> None:
