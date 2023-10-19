@@ -1,8 +1,8 @@
 from __future__ import annotations
 from ..core.abc import HasSimpleRepr
 import numpy as np
-from typing import Any, Tuple, Mapping, Union, Iterator
-from .abc import mpl_axes, MplObj
+from typing import Any, Tuple, Mapping, Union, Iterator, Self
+from .abc import mpl_axes, MplObj, Artist, mpl_axis
 from .artist_formatter import MarkerFormatter, \
     LineFormatter, ErrorBarFormatter, FillFormatter, TextFormatter, FrameFormatter
 from .color import Color
@@ -20,22 +20,35 @@ class PlotFmts:
     @property
     def each(self):
         return self.line, self.marker, self.errorbar, self.fill
+
     
-class Axes(MplObj):
+class Axes(MplObj[mpl_axes.Axes]):
     
     Raw = mpl_axes.Axes
     ColorSpec = Color.ColorSpec
     
     def __init__(self, raw: Raw = None, **kw) -> None:
-    
         super().__init__(raw=raw, **kw)
-        self._raw: Axes.Raw
 
         self._plot_fmts = PlotFmts()
         self._text_fmt = TextFormatter()
         self._frame_fmt = FrameFormatter()
         
         self._last_draw = []
+        
+    def secondary_xaxis(self, location: float | str, 
+                        functions=None, **mpl_kw) -> Axes:
+        out = self._raw.secondary_xaxis(location, functions=functions, **mpl_kw)
+        return Axes(out)
+    
+    def secondary_yaxis(self, location: float | str,
+                        functions=None, **mpl_kw) -> Axes:
+        out = self._raw.secondary_yaxis(location, functions=functions, **mpl_kw)
+        return Axes(out)
+        
+    @property
+    def last_draw(self) -> Artist:
+        return Artist(self._last_draw[-1])
 
     def axis_on(self) -> Axes:
         self._raw.set_axis_on()
@@ -53,10 +66,6 @@ class Axes(MplObj):
         )
         self._raw.grid(**kw)
         
-        return self
-    
-    def label_outer(self):
-        self._raw.label_outer()
         return self
     
     def c(self, c: ColorSpec = None, a: float = None) -> Axes:
@@ -82,6 +91,18 @@ class Axes(MplObj):
         if y is not None:
             y = fmt.wrap_text(y)
         return self.fmt_frame(label={'x': x, 'y': y})
+    
+    def scale(self, x: str = None, y: str = None) -> Axes:
+        return self.fmt_frame(scale={'x': x, 'y': y})
+    
+    def tick_params(self, x: dict = None, y: dict = None, 
+                    both: dict = None, **kw) -> Axes:
+        return self.fmt_frame(tick_params={
+            'x': x, 'y': y, 'both': both, **kw})
+    
+    def label_outer(self) -> Axes:
+        self.fmt_frame(label_outer=True)
+        return self
     
     def fmt(self, frame=None, marker=None, fill=None, line=None, 
             errorbar=None, text=None) -> Axes:
@@ -417,6 +438,12 @@ class AxesArray(HasSimpleRepr):
     def to_simple_repr(self) -> list:
         return self._axes_array.tolist()
     
+    def to_list(self, flat = True) -> list[Axes]:
+        axs = self._axes_array
+        if flat:
+            axs = axs.ravel()
+        return axs.tolist()
+        
     def __getitem__(self, key) -> Union[Axes, AxesArray]:
         val = self._axes_array[key]
         if not isinstance(val, Axes):
@@ -459,11 +486,6 @@ class AxesArray(HasSimpleRepr):
             ax.grid(**kw)
     
         return self
-    
-    def label_outer(self):
-        for ax in self:
-            ax.label_outer()
-        return self
 
     def lim(self, x: Tuple[float, float] = None,
             y: Tuple[float, float] = None) -> AxesArray:
@@ -474,6 +496,22 @@ class AxesArray(HasSimpleRepr):
     def label(self, x: str = None, y: str = None) -> AxesArray:
         for ax in self:
             ax.label(x, y)
+        return self
+    
+    def scale(self, x: str = None, y: str = None) -> AxesArray:
+        for ax in self:
+            ax.scale(x, y)
+        return self
+
+    def tick_params(self, x: dict = None, y: dict = None, 
+                    both: dict = None, **kw) -> Self:
+        for ax in self:
+            ax.tick_params(x, y, both, **kw)
+        return self
+    
+    def label_outer(self):
+        for ax in self:
+            ax.label_outer()
         return self
 
     def fmt(self, frame=None, marker=None, fill=None, line=None, 
