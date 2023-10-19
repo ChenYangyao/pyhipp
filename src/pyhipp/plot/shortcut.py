@@ -15,6 +15,11 @@ def subplots(n = 1, share = False, extent = None, space = None, ratios = None,
     figsize = None, layout = None, subsize = 4, figure_kw = None, 
     mpl_subplot_kw = None, **mpl_gridspec_kw):
     
+    '''
+    @layout: 'constrained' | 'compressed' | 'tight' | 'none' | = None. 
+    Default is 'tight' if space is None, or None otherwise.
+    '''
+    
     if np.isscalar(n):
         nr, nc = 1, n
     else:
