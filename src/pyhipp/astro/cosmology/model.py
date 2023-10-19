@@ -125,6 +125,13 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
         rho_matter = rho_crit * omega_m
         return rho_matter
     
+    def age(self, z: np.ndarray) -> np.ndarray:
+        '''
+        In Gyr/h.
+        '''
+        age = self.astropy_model.age(z)
+        return (age / self.unit_system.u_t).to(1).value
+    
     @cached_property
     def halo_theory(self) -> HaloTheory:
         return HaloTheory(self.data_dir/'data.hdf5', self)
