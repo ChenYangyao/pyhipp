@@ -51,3 +51,32 @@ class Bootstrap:
                     ids = rng.choice(n, size=n)
                 dset_out[k] = v[ids]
         return dset_out
+    
+    
+class RandomNoise:
+    
+    def __init__(self, sigma: float, noise_dist = 'normal', 
+        noise_in_lg = False, rng: Rng = 0) -> None:
+        
+        assert noise_dist == 'normal'
+        
+        self.sigma = float(sigma)
+        self.noise_dist = str(noise_dist)
+        self.noise_in_lg = bool(noise_in_lg)
+        self.rng = Rng(rng)
+        
+    def add_to(self, x: np.ndarray, n_repeats = 1) -> np.ndarray:
+        rng, sigma, in_lg = self.rng, self.sigma, self.noise_in_lg
+        
+        x = np.asarray(x)
+        n_xs = len(x)
+        dx = rng.standard_normal((n_repeats, n_xs)) * sigma
+        if in_lg:
+            out = x * 10**dx
+        else:
+            out = x + dx
+        
+        if n_repeats == 1:
+            out = out[0]
+        
+        return out
