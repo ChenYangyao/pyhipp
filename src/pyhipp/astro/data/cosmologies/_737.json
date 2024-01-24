@@ -1,0 +1,15 @@
+{
+    "name": "_737",
+    "measurement": "None",
+    "data_dir": "tng",
+    "parameters": {
+        "hubble": 0.7,
+        "omega_m0": 0.3,
+        "omega_l0": 0.7,
+        "omega_b0": 0.045,
+        "sigma_8": 0.8288,
+        "n_spec": 0.9611,
+        "t_cmb": 2.7255,
+        "y_helium": 0.25
+    }
+}

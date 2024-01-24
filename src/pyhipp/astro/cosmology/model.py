@@ -72,7 +72,8 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
         return self.params['hubble'].value
     
     def big_hubble(self, z: np.ndarray) -> np.ndarray:
-        return self.astropy_model.H(z)
+        u = self.unit_system.u_big_hubble
+        return (self.astropy_model.H(z) / u).to(1).value
     
     @property
     def omega_m0(self) -> np.ndarray:
@@ -109,17 +110,27 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
     
     
     def rho_crit(self, z: np.ndarray) -> np.ndarray:
+        '''
+        In physical volume.
+        '''
         rho = self.astropy_model.critical_density(z)
         return (rho / self.unit_system.u_density).to(1).value
     
     def rho_matter(self, z: np.ndarray) -> np.ndarray:
         '''
-        In physical volume
+        In physical volume.
         '''
         rho_crit = self.rho_crit(z)
         omega_m = self.omega_m(z)
         rho_matter = rho_crit * omega_m
         return rho_matter
+    
+    def age(self, z: np.ndarray) -> np.ndarray:
+        '''
+        In Gyr/h.
+        '''
+        age = self.astropy_model.age(z)
+        return (age / self.unit_system.u_t).to(1).value
     
     @cached_property
     def halo_theory(self) -> HaloTheory:
@@ -128,6 +139,10 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
     @cached_property
     def distances(self) -> DistanceCalculator:
         return DistanceCalculator(self)
+    
+    @cached_property
+    def times(self) -> TimeCalculator:
+        return TimeCalculator(self)
     
     @cached_property
     def redshifts(self) -> RedshiftCalculator:
@@ -146,6 +161,19 @@ class DistanceCalculator:
         d = self.astropy_model.comoving_distance(z).to('Mpc').value
         return d * self.hubble
     
+class TimeCalculator:
+    def __init__(self, model: LambdaCDM) -> None:
+        self.model = model
+        self.hubble = model.hubble
+        self.astropy_model = model.astropy_model
+        
+    def lookback_at(self, z: np.ndarray) -> np.ndarray:
+        '''
+        Returned in [Gyr/h].
+        '''
+        t_lb = self.astropy_model.lookback_time(z).to('Gyr').value
+        return t_lb * self.hubble
+    
 class RedshiftCalculator:
     def __init__(self, model: LambdaCDM) -> None:
         self.model = model
@@ -158,7 +186,7 @@ class RedshiftCalculator:
         z = astropy.cosmology.z_at_value(
             self.astropy_model.comoving_distance, d, **sol_kw).value
         return z
-        
+
     
 class HaloTheory(HasSimpleRepr, IsImmutable):
     '''
@@ -178,17 +206,36 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
             'interp_detail': self.interp_detail,
         }
         
-    def rho_vir_mean(self, f: np.ndarray = 200, 
+    def rho_vir_mean(self, f: np.ndarray = 200.0, 
                      z: np.ndarray = 0.0) -> np.ndarray:
+        '''
+        In comoving unit.
+        '''
         a = 1.0 / (1.0 + z)
         rho_mean = self.model.rho_matter(z) * a**3
         return f * rho_mean
     
+    def rho_vir_crit(self, f: np.ndarray = 200.0, 
+                     z: np.ndarray = 0.0) -> np.ndarray:
+        '''
+        In comoving unit.
+        '''
+        a = 1.0 / (1.0 + z)
+        rho_crit = self.model.rho_crit(z) * a**3
+        return f * rho_crit
+    
     def r_vir(self, m_vir: np.ndarray, rho_vir: np.ndarray) -> np.ndarray:
+        '''
+        Expect `rho_vir` in comoving unit, and return `r_vir` also in comoving 
+        unit (checked to be consistent with TNG).
+        '''
         V = m_vir / rho_vir
         return (V / (4./3.*np.pi))**(1./3.)
         
     def v_vir(self, m_vir, r_vir, to_kmps=False):
+        '''
+        Expect `r_vir` in physical unit, and return `v_vir` in physical.
+        '''
         us = self.model.unit_system
         v_vir = np.sqrt(us.c_gravity * m_vir / r_vir)
         if to_kmps:

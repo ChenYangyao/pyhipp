@@ -3,10 +3,12 @@ from numpy import random as npr
 from typing import Union
 import numpy as np
 from ..core.dataproc.frame import Polar
-from ..core import dataproc as dp
 
 class Rng:
-    def __init__(self, seed: Union[None, int, npr.Generator, Rng] = 0):
+    
+    Initializer = Union[None, int, npr.Generator, 'Rng']
+    
+    def __init__(self, seed: Initializer = 0):
         
         if isinstance(seed, npr.Generator):
             np_rng = seed
