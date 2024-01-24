@@ -17,5 +17,5 @@ def test_knn(regr_data_1d: DataDict):
     print(out)
     
     out = KernelRegression1D.by_knn(x, y, x_pred=x_pred, 
-        reduce=('mean', 'std', 'median'))
+        reduce=['mean', 'std', 'median'])
     print(out)

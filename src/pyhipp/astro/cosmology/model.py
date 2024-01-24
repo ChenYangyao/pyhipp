@@ -141,6 +141,10 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
         return DistanceCalculator(self)
     
     @cached_property
+    def times(self) -> TimeCalculator:
+        return TimeCalculator(self)
+    
+    @cached_property
     def redshifts(self) -> RedshiftCalculator:
         return RedshiftCalculator(self)
     
@@ -157,6 +161,19 @@ class DistanceCalculator:
         d = self.astropy_model.comoving_distance(z).to('Mpc').value
         return d * self.hubble
     
+class TimeCalculator:
+    def __init__(self, model: LambdaCDM) -> None:
+        self.model = model
+        self.hubble = model.hubble
+        self.astropy_model = model.astropy_model
+        
+    def lookback_at(self, z: np.ndarray) -> np.ndarray:
+        '''
+        Returned in [Gyr/h].
+        '''
+        t_lb = self.astropy_model.lookback_time(z).to('Gyr').value
+        return t_lb * self.hubble
+    
 class RedshiftCalculator:
     def __init__(self, model: LambdaCDM) -> None:
         self.model = model
@@ -169,7 +186,7 @@ class RedshiftCalculator:
         z = astropy.cosmology.z_at_value(
             self.astropy_model.comoving_distance, d, **sol_kw).value
         return z
-        
+
     
 class HaloTheory(HasSimpleRepr, IsImmutable):
     '''

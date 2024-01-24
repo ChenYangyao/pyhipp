@@ -1,0 +1,14 @@
+{
+    "name": "elucid_wmap9",
+    "measurement": "WMAP9",
+    "data_dir": "elucid",
+    "parameters": {
+        "hubble": 0.697,
+        "omega_m0": 0.282,
+        "omega_l0": 0.718,
+        "omega_b0": 0.046,
+        "sigma_8": 0.830,
+        "n_spec": 0.971,
+        "t_cmb": 2.725
+    }
+}

@@ -1,6 +1,9 @@
+from __future__ import annotations
+import typing
+from typing import Tuple
 from dataclasses import dataclass
 from ...core import DataDict, dataproc as dp
-from ...stats import Bootstrap, Bin, Hist1D
+from ...stats import Bootstrap, Bin, Hist1D, RandomNoise
 import numpy as np
 
 class BinnedVolumeDensity:
@@ -13,13 +16,21 @@ class BinnedVolumeDensity:
         lg_y_pad: float = 1.0e-8
     
     @staticmethod
-    def from_raw(x_to_bin, volume, 
-                 bins=15, sub_bins=3, range=None, p_range=None, 
-                 weights=None, 
-                 n_bootstrap = 10,
-                 policy: Policy=None,
+    def from_raw(x_to_bin: np.ndarray, 
+                 volume: float = 1., 
+                 bins: int = 15, 
+                 sub_bins: int = 3, 
+                 range: tuple[float, float] | None = None, 
+                 p_range: tuple[float, float] | None = None, 
+                 weights: np.ndarray | None = None, 
+                 n_bootstrap: int = 10,
+                 noise: RandomNoise | None = None,
+                 policy: Policy | None = None,
                  **resample_kw) -> DataDict:
         '''
+        @noise: random noise added to each batch of resampled values before 
+            performing the statistic.
+        
         Returned: 
             x, dx, sub_e, h, y, lg_y,
             _sd for h, y and lg_y
@@ -35,7 +46,8 @@ class BinnedVolumeDensity:
         sel = (x>=x_min)&(x<x_max)
         dset_in = {'x_to_bin': x[sel]}
         stats_kw = {'bins': bins, 'sub_bins': sub_bins, 'range': range,
-                    'volume': volume, 'lg_y_pad': policy.lg_y_pad}
+                    'volume': volume, 'lg_y_pad': policy.lg_y_pad, 
+                    'noise': noise}
         if weights is not None:
             dset_in['weights'] = weights[sel] 
         else:
@@ -53,7 +65,10 @@ class BinnedVolumeDensity:
         return d_out
     
     @staticmethod
-    def __hist(x_to_bin, bins, sub_bins, range, weights, volume, lg_y_pad):
+    def __hist(x_to_bin, bins, sub_bins, range, weights, volume, lg_y_pad, 
+               noise: RandomNoise|None):
+        if noise is not None:
+            x_to_bin = noise.add_to(x_to_bin)
         out = Hist1D.from_overlapped_bins(x_to_bin, bins=bins, 
             sub_bins=sub_bins, range=range, weights=weights)
         x, dx, sub_e, h = out['x', 'dx', 'sub_e', 'h']
