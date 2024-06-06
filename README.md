@@ -19,51 +19,15 @@ To install `pyhipp` and automatically handle the dependencies, use:
 pip install pyhipp
 ```
 
+## Usage 
+
+See the Jupyter notebooks under `docs/`.
+- `io.ipynb`: I/O facilities for data I/O, e.g., with HDF5.
+
+
+
 ## Interesting Features
 
-**Extended HDF5 IO**. Suppose you have a nested catalog data, e.g.,
-```py
-halo_cat = {
-    'Header': {
-        'n_subhalos': 10, 'n_halos': 5, 'version': '1.0.0',
-        'source': 'ELUCID simulation', 'last_update': '2023-08-17',
-    },
-    'Subhalos': {
-        'id': np.arange(10),
-        'x': np.random.uniform(size=(10,3)), 
-        'v': np.random.uniform(size=(10,3)),
-    },
-    'Halos': {
-        'id': np.arange(5),
-        'x': np.random.uniform(size=(5,3)),
-        'v': np.random.uniform(size=(5,3)),
-    },
-}
-```
-
-Dump it recursively into a HDF5 file:
-```py
-from pyhipp.io import h5
-
-h5.File.dump_to(path, halo_cat)
-```
-    
-Load back all or a subset:
-```py
-halo_cat = h5.File.load_from(path)
-halos = h5.File.load_from(path, 'Halos')
-```
-    
-Of course, you can open the file, and load datasets separately:
-```py
-with h5.File(path) as f:
-    dsets = f['Halos'].datasets
-    x = dsets.x                   # load via attributes (Thanks Zhaozhou Li for the idea)
-    id, v = dsets['id', 'v']      # load via getitem
-    
-    halos = f['Halos'].load()     # load all halos as a dict-like object
-    x = halos['x']
-```
 
 **Schedulers for Parallel Computation**. A MPI-based job pool can be used like:
 ```py
