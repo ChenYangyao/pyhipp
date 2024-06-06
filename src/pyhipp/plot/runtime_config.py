@@ -82,7 +82,9 @@ class RuntimeConfig:
     stylesheets = {
         'default': default_config_dict,
         'mathtext-it': {
-            'mathtext': {'default': 'it'}
+            'mathtext': {
+                'default': 'it'
+            }
         }
     }
     
