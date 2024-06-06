@@ -79,6 +79,7 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
         self.c_gravity = self.__conv_coef(c.G, self.u_gravity_constant)
         self.c_m_sun = self.__conv_coef(u.Msun, self.u_m)
         self.c_light_speed = self.__conv_coef(c.c, self.u_v)
+        self.c_m_p = self.__conv_coef(c.m_p, self.u_m)
         
     @staticmethod
     def __conv_coef(x_from, x_to) -> float:
