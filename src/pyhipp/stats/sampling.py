@@ -1,27 +1,32 @@
-from typing import Callable, Iterable, Mapping, Optional, Any, Union, List, Dict
+from __future__ import annotations
+import typing
+from typing import Callable, Iterable, Mapping, Optional, Any, Union, List, Dict, Sequence
 from .random import Rng
 from ..core import DataDict, dataproc as dp
 from .stacking import Stack
 import numpy as np
+import sys
 
 
 class Bootstrap:
 
     @staticmethod
     def resampled_call(
-            stats_fn: Callable,
-            dsets_in: Iterable[Mapping[str, np.ndarray]],
-            keys_out: Iterable[str],
-            stats_kw: Optional[Mapping[str, Any]] = None,
-            n_resample: int = 10,
-            rng: Rng.Initializer = 0,
-            keep_samples: bool = False) -> DataDict:
+        stats_fn: Callable,
+        dsets_in: Iterable[Mapping[str, np.ndarray]],
+        keys_out: Iterable[str],
+        stats_kw: Optional[Mapping[str, Any]] = None,
+        n_resample: int = 10,
+        rng: Rng.Initializer = 0,
+        keep_samples: bool = False,
+        dsets_max_sizes: None | Iterable[int] = None,
+    ) -> DataDict:
 
         rng = Rng(rng)
 
         dsets_out: List[Mapping] = []
         for _ in range(n_resample):
-            _dset_in = Bootstrap.__resample(dsets_in, rng)
+            _dset_in = Bootstrap.__resample(dsets_in, dsets_max_sizes, rng)
             if stats_kw is not None:
                 _dset_in |= stats_kw
             _dset_out = stats_fn(**_dset_in)
@@ -42,14 +47,24 @@ class Bootstrap:
         return dset_out
 
     @staticmethod
-    def __resample(dsets: List[Dict[str, np.ndarray]], rng: Rng):
+    def __resample(dsets: List[Dict[str, np.ndarray]],
+                   dset_max_sizes: None | int | Iterable[int],
+                   rng: Rng):
+        dsets = list(dsets)
+        if dset_max_sizes is None:
+            max_ns = list(2**60 for _ in dsets)
+        else:
+            max_ns = list(dset_max_sizes)
+        assert len(max_ns) == len(dsets)
+
         dset_out = DataDict()
-        for dset in dsets:
+        for dset, max_n in zip(dsets, max_ns):
             ids = None
             for k, v in dset.items():
                 if ids is None:
                     n = len(v)
-                    ids = rng.choice(n, size=n)
+                    re_n = min(n, max_n)
+                    ids = rng.choice(n, size=re_n)
                 dset_out[k] = v[ids]
         return dset_out
 
