@@ -5,4 +5,4 @@ from .binning import Bin, Hist1D, Bins, EqualSpaceBins, BiSearchBins
 from .sampling import Bootstrap, RandomNoise
 from .stacking import Stack
 from .regression import KernelRegression1D, KernelRegressionND, _KnnRegression
-from .density_estimation import _Histogram, DensityEstimationND
+from .density_estimation import _Histogram, DensityEstimationND, DensityEstimation1D
