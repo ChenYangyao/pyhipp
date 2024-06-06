@@ -1,0 +1,14 @@
+{
+    "name": "millennium",
+    "measurement": "WMAP1",
+    "data_dir": "elucid",
+    "parameters": {
+        "hubble": 0.73,
+        "omega_m0": 0.25,
+        "omega_l0": 0.75,
+        "omega_b0": 0.0425,
+        "sigma_8": 0.9,
+        "n_spec": 1.0,
+        "t_cmb": 2.725
+    }
+}

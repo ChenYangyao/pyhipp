@@ -1,0 +1,14 @@
+{
+    "name": "millennium_wmap7",
+    "measurement": "WMAP7",
+    "data_dir": "elucid",
+    "parameters": {
+        "hubble": 0.704,
+        "omega_m0": 0.272,
+        "omega_l0": 0.728,
+        "omega_b0": 0.045,
+        "sigma_8": 0.807,
+        "n_spec": 0.961,
+        "t_cmb": 2.725
+    }
+}
