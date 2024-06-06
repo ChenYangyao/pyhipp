@@ -168,7 +168,7 @@ class StdDev(Reduce):
         if x.ndim == 2:
             x_mean = x_mean[:, None]
         dx = x - x_mean
-        return mean(dx * dx, weight, mask)
+        return np.sqrt(mean(dx * dx, weight, mask))
 
 
 class Quantile(Reduce):
