@@ -12,6 +12,7 @@ from ...core import dataproc as dp
 import astropy.cosmology
 from ..quantity import UnitSystem
 from contextlib import contextmanager
+from dataclasses import dataclass
 
 class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
     def __init__(self, 
@@ -187,12 +188,31 @@ class RedshiftCalculator:
             self.astropy_model.comoving_distance, d, **sol_kw).value
         return z
 
+@dataclass
+class VirialProperties:
+    '''
+    rho: comoving.
+    r: comoving.
+    r_phy: physical.
+    v: physical.
+    '''
+    m: np.ndarray
+    rho: np.ndarray
+    r: np.ndarray
+    r_phy: np.ndarray
+    v: np.ndarray
+    
+    @property
+    def t_dyn(self):
+        t_dyn = self.r_phy / self.v
+        return t_dyn
     
 class HaloTheory(HasSimpleRepr, IsImmutable):
     '''
     The initialization has overhead. So it is embeded into `LambdaCDM` as a 
     cached property. As a result, `LambdaCDM` is not mutable.
     '''
+    
     def __init__(self, data_file: Path, model: LambdaCDM) -> None:
         super().__init__()
         
@@ -224,6 +244,18 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
         rho_crit = self.model.rho_crit(z) * a**3
         return f * rho_crit
     
+    def vir_props_mean(
+        self, m_vir: np.ndarray, f: np.ndarray = 200.0, 
+        z: np.ndarray = 0.0) -> VirialProperties:
+        rho = self.rho_vir_mean(f, z)
+        return self.__vir_props(m_vir, rho, z)
+    
+    def vir_props_crit(
+        self, m_vir: np.ndarray, f: np.ndarray = 200.0,
+        z: np.ndarray = 0.0) -> VirialProperties:
+        rho = self.rho_vir_crit(f, z)
+        return self.__vir_props(m_vir, rho, z)
+    
     def r_vir(self, m_vir: np.ndarray, rho_vir: np.ndarray) -> np.ndarray:
         '''
         Expect `rho_vir` in comoving unit, and return `r_vir` also in comoving 
@@ -232,7 +264,7 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
         V = m_vir / rho_vir
         return (V / (4./3.*np.pi))**(1./3.)
         
-    def v_vir(self, m_vir, r_vir, to_kmps=False):
+    def v_vir(self, m_vir, r_vir, to_kmps=False) -> np.ndarray:
         '''
         Expect `r_vir` in physical unit, and return `v_vir` in physical.
         '''
@@ -286,7 +318,12 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
             'step': np.diff(x).mean().tolist(),
         }
         
-
+    def __vir_props(self, m: np.ndarray, rho: np.ndarray, z: np.ndarray) -> VirialProperties:
+        r = self.r_vir(m, rho)
+        a = 1. / (1. + z)
+        r_phy = a * r
+        v = self.v_vir(m, r_phy)
+        return VirialProperties(m, rho, r, r_phy, v)
 
 class _Predefined(HasSimpleRepr, HasCache):
     def __init__(self) -> None:
