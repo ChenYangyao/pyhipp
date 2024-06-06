@@ -13,11 +13,13 @@ def figure(figsize = None, dpi = None, layout='tight', **mpl_figure_kw):
 
 def subplots(n = 1, share = False, extent = None, space = None, ratios = None, 
     figsize = None, layout = None, subsize = 4, figure_kw = None, 
-    mpl_subplot_kw = None, **mpl_gridspec_kw):
+    mpl_subplot_kw = None, margin = None, **mpl_gridspec_kw):
     
     '''
     @layout: 'constrained' | 'compressed' | 'tight' | 'none' | = None. 
     Default is 'tight' if space is None, or None otherwise.
+    
+    @margin: 1.0 - extent, an alternative to extent.
     '''
     
     if np.isscalar(n):
@@ -39,7 +41,7 @@ def subplots(n = 1, share = False, extent = None, space = None, ratios = None,
     fig = figure(**kw)
     
     kw = dict(n=n, share=share, extent=extent, space=space, ratios=ratios,
-              mpl_subplot_kw=mpl_subplot_kw, **mpl_gridspec_kw)
+              mpl_subplot_kw=mpl_subplot_kw, margin=margin, **mpl_gridspec_kw)
     ax = fig.subplots(**kw)
     
     return fig, ax
