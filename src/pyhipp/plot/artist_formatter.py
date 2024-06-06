@@ -294,14 +294,14 @@ class FrameFormatter(ArtistFormatter):
             mpl_ax.tick_params(axis='both', **both, **kw)
             
 class SubplotsFormatter(ArtistFormatter):
-    def __init__(self, n = 1, share = False, extent = None, 
-                 space = None, ratios = None) -> None:
+    def __init__(self, *, n = 1, share = False, extent = None, 
+                 space = None, ratios = None, margin = None) -> None:
         super().__init__(n=n, share=share, extent=extent, 
-                         space=space, ratios=ratios,)
+                         space=space, ratios=ratios, margin=margin)
         
     def get_subplots_kw(self):
-        n, share, extent, space, ratios = self[
-            'n', 'share', 'extent', 'space', 'ratios']
+        n, share, extent, space, ratios, margin = self[
+            'n', 'share', 'extent', 'space', 'ratios', 'margin']
         
         if np.isscalar(n):
             n = (1, n)
@@ -317,6 +317,15 @@ class SubplotsFormatter(ArtistFormatter):
             e1, e2 = extent
             extent = (e2, e2, e1, e1)
         top, right, bottom, left = extent
+        
+        if margin is not None:
+            if np.isscalar(margin):
+                margin = margin, margin, margin, margin
+            elif len(margin) == 2:
+                m1, m2 = margin
+                margin = m2, m2, m1, m1
+            top, right, bottom, left = margin
+            top, right = 1.0 -  top, 1.0 - right
         
         if space is None or np.isscalar(space):
             space = space, space

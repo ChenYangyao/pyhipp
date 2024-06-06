@@ -1,7 +1,7 @@
 from __future__ import annotations
 from ..core.abc import HasSimpleRepr
 import numpy as np
-from typing import Any, Tuple, Mapping, Union, Iterator, Self
+from typing import Any, Tuple, Mapping, Union, Iterator, Self, Literal, Optional
 from .abc import mpl_axes, MplObj, Artist, mpl_axis
 from .artist_formatter import MarkerFormatter, \
     LineFormatter, ErrorBarFormatter, FillFormatter, TextFormatter, FrameFormatter
@@ -98,6 +98,11 @@ class Axes(MplObj[mpl_axes.Axes]):
 
     def tick_params(self, x: dict = None, y: dict = None,
                     both: dict = None, **kw) -> Axes:
+        '''
+        Examples
+        --------
+        ax.tick_params(x={'which': 'both', 'top': False})
+        '''
         return self.fmt_frame(tick_params={
             'x': x, 'y': y, 'both': both, **kw})
 
@@ -391,7 +396,17 @@ class Axes(MplObj[mpl_axes.Axes]):
             borderpad=None, borderaxespad=None,
             ncol=1, labelspacing=None, columnspacing=None,
             title=None, title_fontsize=None,
-            frameon=None, framealpha=None, **mpl_legend_kw):
+            frameon=None, framealpha=None, 
+            labelcolor: Literal['linecolor','mec','mfc'] | None = None,
+            **mpl_legend_kw):
+        
+        loc_map = {
+            'r': 'right', 
+            'lr': 'lower right', 'll': 'lower left', 'cl': 'center left',
+            'ur': 'upper right', 'ul': 'upper left', 'uc': 'upper center',
+            'center left': 'cl', 'center right': 'cr', 'c': 'center',
+        }
+        loc = loc_map.get(loc, loc)
 
         kw = dict(loc=loc,
                   fontsize=fontsize,
@@ -407,8 +422,8 @@ class Axes(MplObj[mpl_axes.Axes]):
                   labelspacing=labelspacing,
                   columnspacing=columnspacing,
                   frameon=frameon,
-                  framealpha=framealpha)
-        kw |= mpl_legend_kw
+                  framealpha=framealpha,
+                  labelcolor=labelcolor) | mpl_legend_kw
 
         self._raw.legend(*args, **kw)
 
@@ -484,6 +499,11 @@ class AxesArray(HasSimpleRepr):
         for ax in self:
             ax.grid(**kw)
 
+        return self
+    
+    def c(self, c: Color.ColorSpec = None, a: float = None) -> Self:
+        for ax in self:
+            ax.c(c=c, a=a)
         return self
 
     def lim(self, x: Tuple[float, float] = None,

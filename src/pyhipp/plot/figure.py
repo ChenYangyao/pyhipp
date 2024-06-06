@@ -23,10 +23,11 @@ class FigureBase(MplObj[mpl_figure.FigureBase]):
         return Artist(self._last_draw[-1])
         
     def subplots(self, n = 1, share = False, extent = None, space = None, 
-            ratios = None, mpl_subplot_kw=None, **mpl_gridspec_kw):
+            ratios = None, mpl_subplot_kw=None, margin = None,
+            **mpl_gridspec_kw):
         
         kw = SubplotsFormatter(n=n,share=share,extent=extent,space=space, 
-            ratios=ratios).get_subplots_kw()
+            ratios=ratios, margin=margin).get_subplots_kw()
         if mpl_subplot_kw is not None:
             kw['subplot_kw'] |= mpl_subplot_kw
         kw['gridspec_kw'] |= mpl_gridspec_kw
