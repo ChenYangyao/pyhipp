@@ -31,6 +31,9 @@ class Rng:
     def standard_normal(self, size=None):
         return self._np_rng.standard_normal(size=size)
     
+    def normal(self, loc = 0.0, scale = 1.0, size = None):
+        return self._np_rng.normal(loc = loc, scale = scale, size = size)
+    
     def choice(self, a, size=None, replace=True, p=None, axis=0, shuffle=True):
         return self._np_rng.choice(a, size=size, replace=replace, p=p, 
             axis=axis, shuffle=shuffle)
@@ -40,7 +43,7 @@ class Rng:
         Return a randomly permutated copy.
         @a: int | array-like. For int, permutate np.arange(a).
         '''
-        self._np_rng.permutation(a, axis=axis)
+        return self._np_rng.permutation(a, axis=axis)
         
     def shuffle(self, a, axis=0):
         '''
