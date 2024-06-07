@@ -19,3 +19,12 @@ def test_knn(regr_data_1d: DataDict):
     out = KernelRegression1D.by_knn(x, y, x_pred=x_pred, 
         reduce=['mean', 'std', 'median'])
     print(out)
+    
+def test_local_kernel(regr_data_1d: DataDict):
+    x, y, x_pred = regr_data_1d['x', 'y', 'x_pred']
+    out = KernelRegression1D.by_local_kernel(x, y, x_pred=x_pred)
+    print(out)
+    
+    out = KernelRegression1D.by_local_kernel(x, y, x_pred=x_pred, 
+        reduce=['mean', 'std', 'median'])
+    print(out)
