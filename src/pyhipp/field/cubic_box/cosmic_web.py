@@ -12,7 +12,6 @@ from numba import njit
 
 
 class FieldInterpolator(abc.HasDictRepr):
-    
     def __init__(self, field: Field) -> None:
         '''
         @field: shall be a scalar field.
@@ -101,6 +100,7 @@ class TidalClassifier(abc.HasDictRepr):
         '''
         @xs: np.ndarray, shape=(n, 3), where n is the number of points.
         '''
+        xs = np.asarray(xs)
         n_xs = len(xs)
         assert xs.shape == (n_xs, 3)
         return self._web_type_at(xs, self.mesh._impl, self.n_lams)
