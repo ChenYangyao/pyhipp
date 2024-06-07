@@ -4,7 +4,6 @@ h5py
 scipy
 astropy
 pyyaml
-mpi4py
 matplotlib
 scikit-learn
 pandas
