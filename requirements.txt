@@ -9,3 +9,4 @@ scikit-learn
 pandas
 importlib_resources
 jupyter
+numba
