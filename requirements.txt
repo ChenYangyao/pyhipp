@@ -8,3 +8,4 @@ matplotlib
 scikit-learn
 pandas
 importlib_resources
+jupyter
