@@ -94,12 +94,16 @@ class _Linear:
         d[i0_r, i1_r, i2_l] += w0_r * w1_r * w2_l * weight
         d[i0_r, i1_r, i2_r] += w0_r * w1_r * w2_r * weight
 
-    def add(self, xs: np.ndarray, weights: np.ndarray):
+    def add(self, xs: np.ndarray, weights: np.ndarray = None):
         '''
         Add multiple points to the field. See add_1().
         '''
-        for x, weight in zip(xs, weights):
-            self.add_1(x, weight)
+        if weights is not None:
+            for x, weight in zip(xs, weights):
+                self.add_1(x, weight)
+        else:
+            for x in xs:
+                self.add_1(x)
 
 
 class DensityField(abc.HasLog):
@@ -113,11 +117,12 @@ class DensityField(abc.HasLog):
         ma = _Linear(field)
         self._ma = ma
 
-    def add(self, xs: np.ndarray, weights: np.ndarray):
+    def add(self, xs: np.ndarray, weights: np.ndarray = None):
 
-        assert len(xs) == len(weights)
+        if weights is not None:
+            assert len(xs) == len(weights)
+            assert weights.ndim == 1
         assert xs.ndim == 2 and xs.shape[1] == 3
-        assert weights.ndim == 1
 
         self._ma.add(xs, weights)
 
@@ -129,6 +134,10 @@ class DensityField(abc.HasLog):
             'l_box': mesh.l_box,
             'n_grids': mesh.n_grids,
         }, flag=flag)
+        
+    @property
+    def data(self):
+        return self._ma.data
 
     @staticmethod
     def join_dumps(
