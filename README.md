@@ -23,37 +23,4 @@ pip install pyhipp
 
 See the Jupyter notebooks under `docs/`.
 - `io.ipynb`: I/O facilities for data I/O, e.g., with HDF5.
-
-
-
-## Interesting Features
-
-
-**Schedulers for Parallel Computation**. A MPI-based job pool can be used like:
-```py
-from pyhipp.mpi import Comm, Pool
-
-pool = Pool(Comm.world())
-    
-if pool.is_leader:
-    for i in range(100):         # distribute works
-        pool.assign_work(i)
-    pool.join()
-    print(pool.pop_replies())    # see gathered results
-else:
-    for work in pool.works():       
-        i = work.content         # receive assigned data
-        work.reply = np.sin(i)   # make response
-```
-
-**Cosmological Computation**. For example, the comoving distance at given redshifts
-in a given cosmology:
-```py
-from pyhipp.astro.cosmology import model
-
-cosm = model.predefined['tng']
-z = [0., 1., 2., 3., 4.]
-d = cosm.distances.comoving_at(z)   # => [0., 2300.371, 3597.988, ...]
-```
-
-**More is coming ...**
+- `astro.ipynb`: Astronomy-related functionalities, e.g. cosmological computations.
