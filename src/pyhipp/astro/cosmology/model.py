@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Any, Self
+from typing import Dict, Any, Self, Callable
 import numpy as np
 import h5py
 import json
@@ -85,7 +85,7 @@ class LambdaCDM(HasName, HasSimpleRepr, IsImmutable):
         if meta is None:
             meta = {}
         return LambdaCDM(params=ps, data_dir=data_dir, meta=meta, name=name)
-    
+
     @staticmethod
     def from_astropy_model(model: astropy.cosmology.FlatLambdaCDM, **kw):
         '''
@@ -266,7 +266,6 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
 
         self.data_file = Path(data_file)
         self.model = model
-        self.__make_interp()
 
     def to_simple_repr(self) -> dict:
         return {
@@ -326,18 +325,19 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
         '''
         lg_m: log10(M) [10^10 Msun/h]
         '''
-        return self._lg_sigma_at_lg_m(lg_m)
+        return self.__interp['f_lg_sigma_at_lg_m'](lg_m)
 
     def dlg_sigma_dlg_m(self, lg_m: np.ndarray) -> np.ndarray:
         '''
         lg_m: log10(M) [10^10 Msun/h]
         '''
-        return self._dlg_sigma_dlg_m_at_lg_m(lg_m)
+        return self.__interp['f_dlg_sigma_dlg_m_at_lg_m'](lg_m)
 
     def lg_delta_c(self, z: np.ndarray) -> np.ndarray:
-        return self._lg_delta_c_at_z(z)
+        return self['f_lg_delta_c_at_z'](z)
 
-    def __make_interp(self):
+    @cached_property
+    def __interp(self) -> dict[str, Callable | dict]:
         with h5py.File(str(self.data_file), 'r') as f:
             g = f['LgDeltaC']
             z, lg_delta_c = g['z'][()], g['lg_delta_c'][()]
@@ -348,15 +348,19 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
             dlg_sigma_dlg_m = g['dlg_sigma_dlg_m'][()]
 
         kw = {'kind': 'slinear'}
-        self._lg_sigma_at_lg_m = interp1d(lg_m, lg_sigma, **kw)
-        self._dlg_sigma_dlg_m_at_lg_m = interp1d(lg_m, dlg_sigma_dlg_m, **kw)
-        self._lg_delta_c_at_z = interp1d(z, lg_delta_c, **kw)
-        self.interp_detail = {
+        f_lg_sigma_at_lg_m = interp1d(lg_m, lg_sigma, **kw)
+        f_dlg_sigma_dlg_m_at_lg_m = interp1d(lg_m, dlg_sigma_dlg_m, **kw)
+        f_lg_delta_c_at_z = interp1d(z, lg_delta_c, **kw)
+        return {
             'z': self.__find_quantity_info(z),
             'lg_delta_c': self.__find_quantity_info(lg_delta_c),
             'lg_m': self.__find_quantity_info(lg_m),
             'lg_sigma': self.__find_quantity_info(lg_sigma),
             'dlg_sigma_dlg_m': self.__find_quantity_info(dlg_sigma_dlg_m),
+
+            'f_lg_sigma_at_lg_m': f_lg_sigma_at_lg_m,
+            'f_dlg_sigma_dlg_m_at_lg_m': f_dlg_sigma_dlg_m_at_lg_m,
+            'f_lg_delta_c_at_z': f_lg_delta_c_at_z,
         }
 
     def __find_quantity_info(self, x) -> Dict:
