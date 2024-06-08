@@ -10,3 +10,5 @@ pandas
 importlib_resources
 jupyter
 numba
+flake8
+pytest
