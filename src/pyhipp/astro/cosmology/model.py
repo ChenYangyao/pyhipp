@@ -270,7 +270,7 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
     def to_simple_repr(self) -> dict:
         return {
             'data_file': str(self.data_file),
-            'interp_detail': self.interp_detail,
+            '__interp': self.__interp,
         }
 
     def rho_vir_mean(self, f: np.ndarray = 200.0,
@@ -334,7 +334,7 @@ class HaloTheory(HasSimpleRepr, IsImmutable):
         return self.__interp['f_dlg_sigma_dlg_m_at_lg_m'](lg_m)
 
     def lg_delta_c(self, z: np.ndarray) -> np.ndarray:
-        return self['f_lg_delta_c_at_z'](z)
+        return self.__interp['f_lg_delta_c_at_z'](z)
 
     @cached_property
     def __interp(self) -> dict[str, Callable | dict]:
