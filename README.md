@@ -1,4 +1,4 @@
-# PyHIPP - Modern Python toolkit for HPC
+# PyHipp - Modern Python toolkit for HPC
 
 [![Last commit](https://img.shields.io/github/last-commit/ChenYangyao/pyhipp/master)](https://github.com/ChenYangyao/pyhipp/commits/master)
 [![Workflow Status](https://img.shields.io/github/actions/workflow/status/ChenYangyao/pyhipp/run-test.yml)](https://github.com/ChenYangyao/pyhipp/actions/workflows/run-test.yml)
@@ -6,12 +6,11 @@
 [![PyPI](https://img.shields.io/pypi/v/pyhipp)](https://pypi.org/project/pyhipp/)
 [![astropy](http://img.shields.io/badge/powered%20by-AstroPy-orange.svg?style=flat)](http://www.astropy.org/)
 
-PyHIPP is a computational toolkit, designed mainly for astronomical researches.
+PyHipp is a computational toolkit, designed mainly for astronomical researches.
 We pre-release this package, as our other projects depend extensively on it.
 The package is still under active update, subjecting to structural changes and
 functional extensions. The docs are still incomplete, and testings do not cover the 
 full source tree, which we will continue to complete.
-
 
 To install `pyhipp` and automatically handle the dependencies, use:
 ```bash

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyhipp"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
   { name="Yangyao Chen", email="yangyaochen.astro@foxmail.com" },
 ]
@@ -18,7 +18,8 @@ classifiers = [
 ]
 dependencies = [
     "numpy", "h5py", "scipy", "astropy", "pyyaml", "matplotlib", "numba",
-    "scikit-learn", "pandas", "pytest>=7.0.0", "importlib_resources"
+    "scikit-learn", "pandas", "pytest>=7.0.0", "importlib_resources",
+    "flake8",
 ]
 
 [project.urls]
