@@ -33,6 +33,14 @@ class _Rng:
     def normal(self, loc = 0.0, scale = 1.0, size = None):
         return self._np_rng.normal(loc = loc, scale = scale, size = size)
     
+    def lg_normal(self, loc = 0.0, scale = 1.0, size = None):
+        '''
+        Return 10.0**x, where x ~ NormalDist(loc, scale^2).
+        '''
+        lg_rv = self.normal(loc, scale, size)
+        rv = 10.0**lg_rv
+        return rv
+    
     def uniform_sphere_polar(self, size=None):
         '''
         Return theta, phi.

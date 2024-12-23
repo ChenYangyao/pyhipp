@@ -64,7 +64,7 @@ class Field(abc.HasDictRepr):
     def new_by_data(cls, data: np.ndarray, mesh: Mesh) -> Self:
         impl = _Field(data, mesh._impl)
         return cls(impl)
-    
+
     def copied(self) -> Self:
         return self.new_by_data(self.data.copy(), self.mesh)
 

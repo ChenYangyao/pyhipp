@@ -177,7 +177,8 @@ class Scatter2D(abc.HasDictRepr, abc.HasLog):
         self.plot_outs.append(o)
         return self
     
-    def contour(self, ps: np.ndarray = None, colors='k', 
+    def contour(self, ps: np.ndarray = None, use_fill = False,
+                colors='k', 
                 cmap=None, vmin=None, vmax=None, norm=None,
                 lw=None, ls=None, **contour_kw) -> Scatter2D:
         if ps is None:
@@ -196,7 +197,12 @@ class Scatter2D(abc.HasDictRepr, abc.HasLog):
         kw = dict(levels=z_levels, colors=colors, cmap=cmap, vmin=vmin, 
                   vmax=vmax, norm=norm, linewidths=lw, linestyles=ls)
         kw |= contour_kw
-        o = self.ax._raw.contour(x_c, y_c, z, **kw)
+        if use_fill:
+            fn = self.ax._raw.contourf
+            del kw['linewidths']
+        else:
+            fn = self.ax._raw.contour
+        o = fn(x_c, y_c, z, **kw)
         self.plot_outs.append(o)
         
         return self

@@ -77,7 +77,54 @@ class _Tophat:
     def volume(self):
         return 4.0/3.0 * np.pi * self.r**3
 
+class FFTSmoothing:
+    
+    def __init__(self, n_workers=None, r_sm=1.0, method='gaussian') -> None:
+        '''
+        Correction of shape function is NOT made.
+        @r_sm: smooth length.
+        '''
+        self._n_workers = n_workers
+        self._r_sm = r_sm
+        self._method = method
 
+    def run(self, field: Field):
+        data, mesh = field.data, field.mesh._impl
+        fft = NdRealFFT(n_workers=self._n_workers, norm='ortho')
+        method = self._method
+        if method == 'gaussian':
+            sm = _Gaussian(self._r_sm, mesh)
+        elif method == 'tophat':
+            sm = _Tophat(self._r_sm, mesh)
+        else:
+            raise ValueError(f'Unknown method {method}.')
+
+        data_k = fft.forward(data)
+        data_sm_k = self._smooth(data_k, sm)
+        data_sm = fft.backward(data_sm_k)
+        return Field.new_by_data(data_sm, mesh=field.mesh)
+
+    @staticmethod
+    @numba.njit
+    def _smooth(data_k: np.ndarray, sm: _Gaussian):
+        mesh = sm.mesh
+        N = mesh.n_grids
+        Nd2 = N // 2
+        Nd2p1 = Nd2 + 1
+        assert data_k.shape == (N, N, Nd2p1)
+        
+        data_sm_k = np.empty_like(data_k)
+        ki = np.empty(3, dtype=np.float64)
+        for i0 in range(N):
+            ki[0] = np.float64(i0 - N if i0 > Nd2 else i0)
+            for i1 in range(N):
+                ki[1] = np.float64(i1 - N if i1 > Nd2 else i1)
+                for i2 in range(Nd2p1):
+                    ki[2] = np.float64(i2)
+                    w = sm.window_at_ki(ki)
+                    data_sm_k[i0, i1, i2] = data_k[i0, i1, i2] * w
+        return data_sm_k
+    
 class FourierSpaceSmoothing:
 
     @dataclass

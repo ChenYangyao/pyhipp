@@ -24,11 +24,11 @@ class _LinearShapeFn:
     def shape_at_xi(self, xi: float):
         return max(1.0 - np.abs(xi), 0.0)
 
-    def shape_at_x(self, x: float):
+    def shape_at_x(self, x: float) -> float:
         xi = x / self.mesh.l_grid
         return self.shape_at_xi(xi)
     
-    def shape_at_ki(self, ki: float):
+    def shape_at_ki(self, ki: float) -> float:
         '''
         @k: integer grid index in Fourier space.
         '''
@@ -62,6 +62,17 @@ class _LinearShapeFn:
 
         return i_l, i_r, w_l, w_r
 
+
+@jitclass
+class _NoneShapeFn:
+    def __init__(self):
+        pass
+    
+    def shape_at_ki(self, ki: float) -> float:
+        return 1.0
+    
+    def shape_at_ki_nd(self, ki: np.ndarray) -> float:
+        return 1.0
 
 @jitclass
 class _Linear:

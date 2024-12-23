@@ -128,7 +128,7 @@ class GridMd(abc.HasDictRepr):
 
     @property
     def locs_xy(self) -> tuple[np.ndarray, ...]:
-        return tuple(np.meshgrid(*self.locs_1d, indexing='xy'))
+        return tuple(np.meshgrid(*self.locs_1d, indexing='xy'))    
 
     @property
     def locs_1d(self) -> tuple[np.ndarray, ...]:

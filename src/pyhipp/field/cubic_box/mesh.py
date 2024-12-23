@@ -44,7 +44,6 @@ class _Mesh:
         xi = np.floor(x / l + 0.5).astype(np.int64) % n
         return xi
 
-
 class Mesh(abc.HasDictRepr, abc.IsImmutable):
 
     repr_attr_keys = ('n_grids', 'l_box', 'l_grid')

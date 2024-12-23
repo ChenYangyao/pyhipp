@@ -5,7 +5,7 @@ from pyhipp.io import h5
 from typing import Self, Iterable
 from .field import _Field, _Mesh, Field
 from .fft import NdRealFFT
-from .mass_assignment import _LinearShapeFn
+from .mass_assignment import _LinearShapeFn, _NoneShapeFn
 import numpy as np
 from numba.experimental import jitclass
 import numba
@@ -73,12 +73,15 @@ class TidalField:
                 'lam': self.lam
             }, flag=flag)
 
-    def __init__(self, n_workers=None, r_sm=1.0) -> None:
+    def __init__(self, n_workers=None, r_sm=1.0, correct_shape='cic') -> None:
         '''
         @r_sm: Gaussian smooth length.
         '''
         self._n_workers = n_workers
         self._r_sm = r_sm
+        
+        assert correct_shape in (False, 'cic')
+        self._correct_shape = correct_shape
 
     def run(self, rho_x: Field):
         '''
@@ -90,10 +93,12 @@ class TidalField:
         rho_x, mesh = rho_x.data, rho_x.mesh._impl
         fft = NdRealFFT(n_workers=self._n_workers, norm='ortho')
         sm = _Gaussian(self._r_sm, mesh)
+        S = _LinearShapeFn(mesh) if self._correct_shape == 'cic' \
+            else _NoneShapeFn()
 
         delta_x = self._normalize(rho_x)
         delta_k = fft.forward(delta_x)
-        delta_sm_k, phi_k = self._solve_grav(delta_k, sm)
+        delta_sm_k, phi_k = self._solve_grav(delta_k, S, sm)
         delta_sm_x = fft.backward(delta_sm_k)
 
         N = mesh.n_grids
@@ -125,14 +130,13 @@ class TidalField:
 
     @staticmethod
     @numba.njit
-    def _solve_grav(delta_k: np.ndarray, sm: _Gaussian):
+    def _solve_grav(delta_k: np.ndarray, S: _LinearShapeFn, sm: _Gaussian):
         mesh = sm.mesh
         N = mesh.n_grids
         Nd2 = N // 2
         Nd2p1 = Nd2 + 1
         assert delta_k.shape == (N, N, Nd2p1)
 
-        S = _LinearShapeFn(mesh)
         G = _GreenFn3d()
 
         phi_k = np.empty_like(delta_k)
@@ -146,12 +150,12 @@ class TidalField:
                 for i2 in range(Nd2p1):
                     ki[2] = np.float64(i2)
 
-                    w_CIC = 1.0 / S.shape_at_ki_nd(ki)
+                    w_S = 1.0 / S.shape_at_ki_nd(ki)
                     w_sm = sm.window_at_ki(ki)
                     w_G = G.at_ki(ki)
 
                     _delta_k = delta_k[i0, i1, i2]
-                    _delta_sm_k = _delta_k * w_CIC * w_sm
+                    _delta_sm_k = _delta_k * w_S * w_sm
                     _phi_k = _delta_sm_k * w_G
 
                     delta_sm_k[i0, i1, i2] = _delta_sm_k

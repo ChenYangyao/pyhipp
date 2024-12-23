@@ -232,6 +232,7 @@ class Axes(MplObj[mpl_axes.Axes]):
                          weight=weight, **init_kw)
 
     def errorbar(self, x, y, yerr=None, xerr=None, label=None,
+                 lolims=False, uplims=False, xlolims=False, xuplims=False,
                  **mpl_errorbar_kw) -> Axes:
         '''
         @xerr, yerr: float | array-like (N, ) or (2, N) | None.
@@ -260,8 +261,8 @@ class Axes(MplObj[mpl_axes.Axes]):
                   elinewidth=elinewidth,
                   capsize=capsize, capthick=capthick,
                   marker=marker, ms=ms, mew=mew, mec=mec, mfc=mfc,
-                  label=label,
-                  )
+                  label=label, lolims=lolims, uplims=uplims,
+                  xlolims=xlolims, xuplims=xuplims)
         kw |= mpl_errorbar_kw
 
         self._last_draw.append(
@@ -396,12 +397,12 @@ class Axes(MplObj[mpl_axes.Axes]):
             borderpad=None, borderaxespad=None,
             ncol=1, labelspacing=None, columnspacing=None,
             title=None, title_fontsize=None,
-            frameon=None, framealpha=None, 
-            labelcolor: Literal['linecolor','mec','mfc'] | None = None,
+            frameon=None, framealpha=None,
+            labelcolor: Literal['linecolor', 'mec', 'mfc'] | None = None,
             **mpl_legend_kw):
-        
+
         loc_map = {
-            'r': 'right', 
+            'r': 'right',
             'lr': 'lower right', 'll': 'lower left', 'cl': 'center left',
             'ur': 'upper right', 'ul': 'upper left', 'uc': 'upper center',
             'center left': 'cl', 'center right': 'cr', 'c': 'center',
@@ -425,7 +426,8 @@ class Axes(MplObj[mpl_axes.Axes]):
                   framealpha=framealpha,
                   labelcolor=labelcolor) | mpl_legend_kw
 
-        self._raw.legend(*args, **kw)
+        lt = self._raw.legend(*args, **kw)
+        self._last_draw.append(lt)
 
         return self
 
@@ -500,7 +502,7 @@ class AxesArray(HasSimpleRepr):
             ax.grid(**kw)
 
         return self
-    
+
     def c(self, c: Color.ColorSpec = None, a: float = None) -> Self:
         for ax in self:
             ax.c(c=c, a=a)

@@ -79,13 +79,14 @@ class TidalClassifier(abc.HasDictRepr):
 
     def __init__(self, lam: np.ndarray, mesh: Mesh, *, lam_th=0.0) -> None:
 
+        lam = np.array(lam, dtype=np.float32)
         n = mesh.n_grids
         assert lam.shape == (n, n, n, 3)
         assert np.all(lam[:, :, :, 0] <= lam[:, :, :, 1])
         assert np.all(lam[:, :, :, 1] <= lam[:, :, :, 2])
-
         n_lams = np.count_nonzero(lam > lam_th, axis=-1)
 
+        self.lam = lam
         self.n_lams = n_lams
         self.mesh = mesh
         self.lam_th = lam_th
@@ -105,6 +106,12 @@ class TidalClassifier(abc.HasDictRepr):
         assert xs.shape == (n_xs, 3)
         return self._web_type_at(xs, self.mesh._impl, self.n_lams)
 
+    def lam_at(self, xs: np.ndarray):
+        xs = np.asarray(xs)
+        n_xs = len(xs)
+        assert xs.shape == (n_xs, 3)
+        return self._lam_at(xs, self.mesh._impl, self.lam)
+
     @staticmethod
     @njit
     def _web_type_at(xs: np.ndarray, mesh: _Mesh, n_lams: np.ndarray):
@@ -114,6 +121,16 @@ class TidalClassifier(abc.HasDictRepr):
             i0, i1, i2 = mesh.x_to_xi_nd(x)
             web_types[i] = n_lams[i0, i1, i2]
         return web_types
+
+    @staticmethod
+    @njit
+    def _lam_at(xs: np.ndarray, mesh: _Mesh, lam: np.ndarray):
+        n_xs = len(xs)
+        lam_out = np.empty((n_xs, 3), dtype=np.float32)
+        for i, x in enumerate(xs):
+            i0, i1, i2 = mesh.x_to_xi_nd(x)
+            lam_out[i] = lam[i0, i1, i2]
+        return lam_out
 
     def grid_points_of_web_type(self, web_type: str):
         sel = self.n_lams == self.web_types[web_type]
