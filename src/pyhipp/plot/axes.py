@@ -6,7 +6,7 @@ from .abc import mpl_axes, MplObj, Artist, mpl_axis
 from .artist_formatter import MarkerFormatter, \
     LineFormatter, ErrorBarFormatter, FillFormatter, TextFormatter, FrameFormatter
 from .color import Color
-from .scatter_2d import Scatter2D
+from .two_dim import Scatter2D
 
 
 class PlotFmts:
