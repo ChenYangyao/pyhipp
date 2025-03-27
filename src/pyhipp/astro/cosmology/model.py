@@ -209,6 +209,17 @@ class DistanceCalculator:
         '''
         d = self.astropy_model.angular_diameter_distance(z).to('Mpc').value
         return d * self.hubble
+    
+    def luminosity_at(self, z: np.ndarray) -> np.ndarray:
+        '''
+        Returned in [Mpc/h].
+        '''
+        d = self.astropy_model.luminosity_distance(z).to('Mpc').value
+        return d * self.hubble
+    
+    def distance_modulus_at(self, z: np.ndarray) -> np.ndarray:
+        dm = self.astropy_model.distmod(z).value
+        return dm
 
 
 class TimeCalculator:
