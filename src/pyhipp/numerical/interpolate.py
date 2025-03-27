@@ -53,6 +53,9 @@ def bisearch_nearest(x_sorted: np.ndarray, x_dst: numbers.Real) -> int:
 
 @njit
 def bisearch_nearest_array(x_sorted: np.ndarray, x_dst: np.ndarray) -> int:
+    '''
+    Vectorized version of bisearch_nearest().
+    '''
     idx = np.empty(x_dst.size, dtype=np.int64)
     for i, _x_dst in enumerate(x_dst):
         idx[i] = bisearch_nearest(x_sorted, _x_dst)
