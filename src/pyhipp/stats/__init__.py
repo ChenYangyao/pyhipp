@@ -1,4 +1,4 @@
-from . import binning, density_estimation, kernel, preprocessing, random, reduction, summary, regression, sampling, stacking
+from . import binning, density_estimation, kernel, preprocessing, random, prob_dist, reduction, summary, regression, sampling, stacking
 from .random import Rng
 from .reduction import Reduce, Count, Sum, Mean, StdDev, Median, Quantile, Errorbar
 from .binning import Bin, Hist1D, Bins, EqualSpaceBins, BiSearchBins
