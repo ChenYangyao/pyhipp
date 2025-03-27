@@ -1,2 +1,2 @@
-from . import h5
+from . import h5, excel
 from . import yaml
