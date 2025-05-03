@@ -11,7 +11,7 @@ from dataclasses import dataclass
 SingleReduce = m_reduction.ReduceSpec
 Reduce = SingleReduce | Iterable[SingleReduce]
 Kernel = m_kernel.KernelSpec
-
+RegressionOutput = DataDict[str, np.ndarray|list[np.ndarray]]
 
 class _Regression:
 
@@ -50,7 +50,7 @@ class _KnnRegression(_Regression):
                  k: int = 32,
                  max_dx: float = None,
                  kernel: Kernel = None,
-                 impl_query_kw={}) -> DataDict:
+                 impl_query_kw={}) -> RegressionOutput:
         '''
         @reduce: a reduction operation or a Iterable of them.
         '''
@@ -107,7 +107,7 @@ class _LocalKernelRegression(_Regression):
 
     def __call__(self, x: np.ndarray, reduce: Reduce = 'mean',
                  max_dx: float = None, kernel: Kernel = None,
-                 impl_query_kw={}) -> DataDict:
+                 impl_query_kw={}) -> RegressionOutput:
         '''
         @reduce: a reduction operation or a Iterable of them.
         @max_dx: radius for the neighbor query. Default: std / 10.0, where 
@@ -161,7 +161,7 @@ class KernelRegressionND:
     def by_knn(x: np.ndarray, y: np.ndarray, x_pred: np.ndarray, k: int = 32,
                max_dx: float = None, reduce: Reduce = 'mean',
                kernel: Kernel = None, weight: np.ndarray = None,
-               impl_kw={}, impl_query_kw={}) -> DataDict:
+               impl_kw={}, impl_query_kw={}):
         '''
         Examples
         --------
@@ -193,7 +193,7 @@ class KernelRegressionND:
     def by_local_kernel(x: np.ndarray, y: np.ndarray, x_pred: np.ndarray,
                         max_dx: float = None, reduce: Reduce = 'mean',
                         kernel: Kernel = None, weight: np.ndarray = None,
-                        impl_kw={}, impl_query_kw={}) -> DataDict:
+                        impl_kw={}, impl_query_kw={}):
         '''
         Examples
         --------
