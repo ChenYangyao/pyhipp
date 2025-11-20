@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Self
 from pyhipp.core import abc
 from numba.experimental import jitclass
 import numpy as np
@@ -55,7 +56,7 @@ class Mesh(abc.HasDictRepr, abc.IsImmutable):
         self._impl = impl
 
     @classmethod
-    def new(cls, n_grids=32, l_box=1.0):
+    def new(cls, n_grids=32, l_box=1.0) -> Self:
         impl = _Mesh(n_grids, l_box)
         return cls(impl)
 
