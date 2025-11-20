@@ -10,7 +10,7 @@ class _QueryPoints:
     xs: np.ndarray
     rs: np.ndarray
 
-    def on(self, i: int, x_ngbs: np.ndarray):
+    def on(self, i: int, ind_ngbs: np.ndarray, x_ngbs: np.ndarray):
         pass
 
 
@@ -50,14 +50,17 @@ class _PE3Mesh:
 @jitclass
 class _PE3:
     mesh: _PE3Mesh
+    inds: numba.int64[:]
     xs: numba.float64[:, :]
     cell_firsts: numba.int64[:]
 
     def __init__(self, mesh: _PE3Mesh,
+                 inds: np.ndarray,
                  xs: np.ndarray,
                  cell_firsts: np.ndarray):
         assert len(cell_firsts) == mesh.n_grids**3 + 1
         self.mesh = mesh
+        self.inds = inds
         self.xs = xs
         self.cell_firsts = cell_firsts
 
@@ -84,6 +87,7 @@ class _PE3:
         mesh = self.mesh
         n = mesh.n_grids
         cell_firsts, x_ngbs = self.cell_firsts, self.xs
+        ind_ngbs = self.inds
 
         lb0, lb1, lb2 = mesh.x2xi_3(x_dst - r_dst)
         ub0, ub1, ub2 = mesh.x2xi_3(x_dst + r_dst) + 1
@@ -95,7 +99,7 @@ class _PE3:
                     i2_p = i2 % n
                     i_f = (i0_p * n + i1_p) * n + i2_p
                     b, e = cell_firsts[i_f], cell_firsts[i_f+1]
-                    q.on(i_dst, x_ngbs[b:e])
+                    q.on(i_dst, ind_ngbs[b:e], x_ngbs[b:e])
 
 
 @numba.njit
@@ -115,4 +119,4 @@ def _PE3_from_meshing_points(mesh: _PE3Mesh, xs: np.ndarray):
             e += 1
         cell_firsts[i_f+1] = e
         b = e
-    return _PE3(mesh, xs, cell_firsts)
+    return _PE3(mesh, args, xs, cell_firsts)
