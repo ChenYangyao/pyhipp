@@ -23,6 +23,7 @@ class _Constants:
     proton_mass: numba.float64
     gravity_constant: numba.float64
     solar_mass: numba.float64
+    h_planck: numba.float64
     salpeter_time: numba.float64
 
     def __init__(self) -> None:
@@ -40,6 +41,7 @@ class _Constants:
         self.proton_mass = 1.67262192369e-27
         self.gravity_constant = 6.6743e-11
         self.solar_mass = 1.988409870698051e+30
+        self.h_planck = 6.62607015e-34        # little h, planck constant in J s
         
         self.salpeter_time = 450.49 * (self.gyr_to_s * 1.0e-3)
         
@@ -57,6 +59,7 @@ class _UnitSystem:
     u_density: numba.float64
     u_big_hubble: numba.float64
     u_velocity: numba.float64
+    u_angular_momentum: numba.float64
 
     u_velocity_in_kmps: numba.float64
 
@@ -70,6 +73,7 @@ class _UnitSystem:
     
     light_speed: numba.float64
     gravity_constant: numba.float64
+    h_planck: numba.float64
     
     def __init__(self,
                  u_length: float,
@@ -89,6 +93,7 @@ class _UnitSystem:
         self.u_density = u_mass / u_length**3
         self.u_big_hubble = 1.0 / u_time
         self.u_velocity = u_length / u_time
+        self.u_angular_momentum = u_length * u_mass * self.u_velocity
 
         self.u_velocity_in_kmps = self.u_velocity / 1.0e3
 
@@ -100,6 +105,7 @@ class _UnitSystem:
         self.salpeter_time = cc.salpeter_time / u_time
         self.light_speed = cc.light_speed / self.u_velocity
         self.gravity_constant = cc.gravity_constant / self.u_gravity_constant
+        self.h_planck = cc.h_planck / self.u_angular_momentum
 
 class UnitSystem(abc.HasName, abc.HasDictRepr):
     '''
