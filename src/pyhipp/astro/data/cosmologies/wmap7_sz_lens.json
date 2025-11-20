@@ -1,0 +1,15 @@
+{
+    "name": "wmap7_sz_lens",
+    "measurement": "WMAP7+SZ+LENS",
+    "data_dir": "wmap7_sz_lens",
+    "parameters": {
+        "hubble": 0.71,
+        "omega_m0": 0.266,
+        "omega_l0": 0.734,
+        "omega_b0": 0.0449,
+        "sigma_8": 0.81,
+        "n_spec": 0.963,
+        "t_cmb": 2.725
+    },
+    "notes": "Adopted by Wise+ 2019 Nature 566, 85-88."
+}
