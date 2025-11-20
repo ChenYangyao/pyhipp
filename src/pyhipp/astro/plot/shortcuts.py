@@ -53,9 +53,9 @@ class Axes:
     def add_secondary_identical_axis(
             self, location='top', ticks=None, label=None, hide_first_ticks=True,
             **mpl_axes_kw):
-        def fn(x): return x, lambda x: x
+        fn = lambda x: x
         return self.add_secondary_axis(
-            *fn, location=location, ticks=ticks, label=label,
+            fn, fn, location=location, ticks=ticks, label=label,
             hide_first_ticks=hide_first_ticks, **mpl_axes_kw)
 
     def add_secondary_axis_interp(
