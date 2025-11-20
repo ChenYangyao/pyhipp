@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Callable, Dict, Tuple, List
+from typing import Any, Callable, Dict, Tuple, List, Any
 import numpy as np
 import yaml
 import json
@@ -87,6 +87,31 @@ class HasName:
         self.name = str(name)
 
 
+class _ChainLogger:
+    def __init__(self, obj: HasLog, 
+                 wrap_on = 5, flush=True, indent=4):
+        self.obj = obj
+        self.wrap_on = wrap_on
+        self.flush = flush
+        self.indent = ' '*indent
+        self.count = 0
+    
+    def __call__(self, *args):
+        self.count += 1
+        start = self.indent if self.count % self.wrap_on == 1 else ''
+        end = ',\n' if self.count % self.wrap_on == 0 else ', '
+        self.obj.log(start, *args, flush=self.flush, end=end, named=False)
+        
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, *exc):
+        text = ''
+        if self.count % self.wrap_on != 0:
+            text = '\n'
+        text += self.indent + f'({self.count} items done)'
+        self.obj.log(text, flush=self.flush, named=False)
+
 class HasLog(HasName):
     def __init__(self, verbose=False, **kw) -> None:
         super().__init__(**kw)
@@ -101,11 +126,26 @@ class HasLog(HasName):
 
     def log(self, *args, end='\n', sep='', flush=True, named=True,
             timed=False, time_fmt='%Y-%m-%d %H:%M:%S') -> None:
+        return self.log_for(
+            self, *args, end=end, sep=sep, flush=flush, named=named,
+            timed=timed, time_fmt=time_fmt)
+
+    def __get_obj_name(self, obj: str | HasName | Any):
+        if isinstance(obj, str):
+            type_name = obj
+        elif isinstance(obj, HasName):
+            type_name = obj.name
+        else:
+            type_name = type(obj).__name__
+
+    def log_for(self, obj, *args, end='\n', sep='', flush=True, named=True,
+                timed=False, time_fmt='%Y-%m-%d %H:%M:%S') -> None:
         kw = dict(end=end, sep=sep, flush=flush)
         if self.verbose:
             prefix = ''
             if named:
-                prefix += f'[{self.name}]'
+                type_name = self.__get_obj_name(obj)        
+                prefix += f'[{type_name}]'
             if timed:
                 t = strftime(time_fmt, localtime())
                 prefix += f'[{t}]'
@@ -114,6 +154,39 @@ class HasLog(HasName):
             else:
                 print(*args, **kw)
         return self
+    
+    def for_obj(self, obj):
+        return HasLog(verbose=self.verbose, name=self.__get_obj_name(obj))
+    
+    def chain(self, wrap_on=5):
+        '''
+        Examples
+        --------
+        log = abc.HasLog(True, name='Worker')
+
+        log.log('starting the chain of works')
+        with log.chain() as c:
+            for i in range(4):
+                c(i)
+            for i in range(3):
+                c(i)
+                
+        log.log('starting the second chain of works')
+        with log.chain() as c:
+            c('Initialized')
+            c('Updated')
+            c('Finished')
+        
+        Output:
+        [Worker] starting the chain of works
+            0, 1, 2, 3, 0,
+            1, 2,
+            (7 items done)
+        [Worker] starting the second chain of works
+            Initialized, Updated, Finished,
+            (3 items done)
+        '''
+        return _ChainLogger(self, wrap_on=wrap_on)
 
 
 class HasValue:
