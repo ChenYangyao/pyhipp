@@ -23,6 +23,27 @@ class _ILoc(HasSimpleRepr):
     def __getitem__(self, args: np.ndarray | slice) -> DataTable:
         return self._ref.subset(args)
 
+class _KeyManager:
+    def __init__(self, delimiter = ','):
+        self._delimiter = delimiter
+
+    def parse_key(self, key: KeyOrKeys):
+        if isinstance(key, tuple):
+            is_multiple = True
+            out = key
+        elif self._delimiter in key:
+            is_multiple = True
+            out = key.split(self._delimiter)
+        else:
+            is_multiple = False
+            out = key
+        return is_multiple, out
+    
+    def get_val_from_key(self, key: KeyOrKeys, data: Mapping[Key, Value]) -> ValueOrValues:
+        is_multiple, key = self.parse_key(key)
+        if is_multiple:
+            return tuple(data[key1] for key1 in key)
+        return data[key]
 
 class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
     '''
@@ -43,7 +64,9 @@ class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
     Each value can be M-D array, with M >= 1.
     '''
 
-    def __init__(self, data: Mapping[Key, Value] = None, copy=True):
+    def __init__(self, data: Mapping[Key, Value] = None, 
+                 copy=True, delimiter = ','):
+        
         super().__init__()
 
         if data is None:
@@ -54,57 +77,60 @@ class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
         self._data = OrderedDict({
             k: np.array(v, copy=copy) for k, v in data.items()
         })
+        self._key_manager = _KeyManager(delimiter=delimiter)
 
     def __getitem__(self, key: KeyOrKeys) -> ValueOrValues:
         '''
-        @key: str | tuple of str. If `key` is a tuple, return a tuple of 
-        values, each corresponding to an item in `key`.
+        @key: str | tuple of str. If `key` is a tuple, or a str containing
+        the delimiter (default is ','), a tuple of multiple values is returned,
+        with each value corresponding to an item in `key`.
+        
         Each returned value is a reference to the column data.
         '''
-        if isinstance(key, tuple):
-            return tuple(self[_key] for _key in key)
-        return self._data[key]
+        return self._key_manager.get_val_from_key(key, self._data)
 
     def __setitem__(self, key: KeyOrKeys, val: ValueOrValues) -> None:
         '''
         Update self with key and val.
-        If `key` is a tuple, zip(key, val) are iteratively used for update.
+        If `key` is a tuple or a str containing the delimiter (default is ','), 
+        zip(items_of_key, val) are iteratively used for update.
+        
         Values are deep copied.
         '''
+        is_multiple, key = self._key_manager.parse_key(key)
         _data = self._data
-
-        if not isinstance(key, tuple):
+        if is_multiple:
+            assert len(key) == len(val), (
+                f'Lengths of keys and values'
+                f' are not equal ({len(key)} and {len(val)})')
+            for _key, _val in zip(key, val):
+                _data[_key] = np.array(_val)
+        else:
             _data[key] = np.array(val)
-            return
-
-        assert len(key) == len(val), (
-            f'Lengths of keys and values'
-            f' are not equal ({len(key)} and {len(val)})')
-        for _key, _val in zip(key, val):
-            _data[_key] = np.array(_val)
 
     def __delitem__(self, key: KeyOrKeys) -> None:
         '''
         Delete an item keyed `key`.
-        If key is a tuple, each item is treated as a single key whose 
-        corresponding item is deleted.
+        If key is a tuple or a str containing the delimiter (default is ','),
+        each item_of_key is treated as a single key whose corresponding item is 
+        deleted.
         
         Examples 
         --------
         ```py
         del dt['c']
         del dt['a', 'b']
+        del dt['a,b']
         ```
         
         '''
+        is_multiple, key = self._key_manager.parse_key(key)
         _data = self._data
-
-        if not isinstance(key, tuple):
+        if is_multiple:
+            for key1 in key:
+                del _data[key1]
+        else:
             del _data[key]
-            return
-
-        for _key in key:
-            del _data[_key]
 
     def __iter__(self) -> Iterator[Key, Value]:
         return iter(self._data)
@@ -152,13 +178,13 @@ class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
         self.update(other)
         return self
 
-    def __or__(self, other: Mapping[Key, Value]) -> DataTable:
+    def __or__(self, other: Mapping[Key, Value]) -> Self:
         '''Return a new DataTable that is the union of self and other.'''
         out = self.copy()
         out |= other
         return out
 
-    def copy(self) -> DataTable:
+    def copy(self) -> Self:
         return DataTable(self._data)
 
     def to_simple_repr(self) -> Any:
@@ -187,7 +213,7 @@ class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
     def row_stacked(self) -> np.ndarray:
         return np.row_stack(list(self.values()))
 
-    def concat(self, *other: Mapping[Key, Value]) -> DataTable:
+    def concat(self, *other: Mapping[Key, Value]) -> Self:
         '''
         Concatenate self with other DataTable by concatenating (along axis 0) 
         their values with the same key. Return a new DataTable.
@@ -230,7 +256,7 @@ class DataTable(HasSimpleRepr, MutableMapping[Key, Value]):
         return DataTable({
             k: np.concatenate([t[k] for t in all_tables])
             for k in self.keys()
-        })
+        }, copy=False)
 
     def subset(self, args: np.ndarray | slice, copy=True) -> DataTable:
         '''
