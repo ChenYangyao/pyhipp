@@ -1,4 +1,5 @@
 import os
 
 def test_env():
-    print('Python PATH:', os.environ['PYTHONPATH'])    
+    out = os.environ.get('PYTHONPATH', None)
+    print('Python PATH:', out)
