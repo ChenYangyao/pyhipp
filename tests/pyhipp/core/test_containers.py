@@ -1,4 +1,5 @@
-from pyhipp.core import DataDict
+from pyhipp.core import DataDict, DataTable
+import numpy as np
 
 class TestDataDict:
     
@@ -41,4 +42,30 @@ class TestDataDict:
         d = self.get_d2()
         assert isinstance(d['c/e'], list)
         assert d['c/e'] == [4,5,6,7,8,9,10,11,12,13,14,15,16]
+        
+
+class TestDataTable:
+    
+    Self = DataTable
+    
+    def get_data_1(self):
+        return DataTable({
+            'a': np.arange(5),
+            'b': np.linspace(0., 1., 5),
+            'c': np.ones((5,3)),
+        })
+        
+    def test_ctor(self):
+        data = self.get_data_1()
+        for key in ['a', 'b', 'c']:
+            assert isinstance(data[key], np.ndarray) 
+            assert data[key].shape[0] == 5
+        a, b, c = data['a', 'b', 'c']
+        for v in [a, b, c]:
+            assert isinstance(v, np.ndarray) 
+            assert v.shape[0] == 5
+        a, b, c = data['a,b,c']
+        for v in [a, b, c]:
+            assert isinstance(v, np.ndarray) 
+            assert v.shape[0] == 5
         
