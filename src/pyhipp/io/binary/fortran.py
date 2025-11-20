@@ -14,7 +14,20 @@ class BinaryFile(HasDictRepr):
 
     repr_attr_keys = ('file', 'file_path', 'mode', 'open_kw')
 
-    def __init__(self, file_path: Path, mode='rb', open_kw={}):
+    def __init__(self, file_path: Path, mode='rb', open_kw={}):        
+        '''
+        A binary file reader for Fortran unformatted binary files. A fortran 
+        binary file is organized as a sequence of sections. Each section begins 
+        and ends with a `content_size' -- a 4-byte integer indicating 
+        the size (in bytes) of the content, while the content of the section 
+        is in between.
+        
+        Here the methods for input are orgainzed into two levels: 
+        - record-level, read/skip a record directly (without the surrounding
+          `content_size');
+        - section-level, read/skip a section (with the surrounding 
+          `content_size' handled automatically).
+        '''
 
         self._file = open(file_path, mode, **open_kw)
         self._file_path = file_path
@@ -48,6 +61,14 @@ class BinaryFile(HasDictRepr):
         assert n1 == n2
 
     def load_sect(self, dtype: np.dtype, n: int = None) -> np.ndarray:
+        '''
+        Load a section whose content is n data items of given datatype.
+        
+        @dtype: datatype of each item.
+        @n: number of items in the content. If None, a single item is assumed,
+        and the returned value is a numpy record (as if obtained by 
+        items[0], for an array `items` sized 1). 
+        '''
         n1 = self.load_rec(np.int32)
         data = self.load_rec(dtype, n=n)
         n2 = self.load_rec(np.int32)
