@@ -5,6 +5,7 @@ import numpy as np
 from ..core.dataproc.frame import Polar
 import numba
 from numba.experimental import jitclass
+from pyhipp.core import abc
 
 _spec = [
     ('_np_rng', numba.typeof(np.random.default_rng(0))),
@@ -131,3 +132,44 @@ class Rng:
         if not cartesian:
             return theta
         return Polar.unit_vec_to_cart_2d(theta, stack=stack)
+    
+class SeedSequence(abc.HasDictRepr):
+    
+    repr_attr_keys = ('entropy', 'n_bytes')
+    
+    def __init__(self, 
+                 entropy: None | int | list[int] = None, 
+                 n_bytes = 8,
+                 **kw):
+        '''
+        @entropy: seed entropy, i.e. low-quality random number to be started 
+        with. Seeds will be generated in a reproducible way from this entropy 
+        but with high quality.
+        
+        @n_bytes: number of bytes of each generated seed. 
+        Supported values: 4, 8.
+        '''
+        
+        super().__init__(**kw)
+        
+        _impl = np.random.SeedSequence(entropy=entropy)
+        if n_bytes == 4:
+            _dtype = np.uint32
+        elif n_bytes == 8:
+            _dtype = np.uint64
+        else:
+            raise ValueError(f'Unsupported n_bytes: {n_bytes}.')
+        
+        self.entropy = entropy
+        self.n_bytes = n_bytes
+        self._dtype = _dtype
+        self._impl = _impl
+    
+    def get_seed(self) -> int:
+        '''
+        Get a seed. This is a high-quality random integer generated from the
+        entropy, and can be used to initialize a random number generator.
+        '''
+        return self._impl.generate_state(1, dtype=self._dtype)[0].tolist()
+        
+        
