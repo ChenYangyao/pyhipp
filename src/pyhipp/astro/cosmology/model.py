@@ -9,7 +9,7 @@ from ...core.abc import HasName, HasSimpleRepr, HasCache, IsImmutable
 from ...core import dataproc as dp
 import astropy.cosmology
 from ..quantity import UnitSystem
-
+from ..coords.cvt import arcsec_to_deg, deg_to_rad
 from .param import ParamList, Param
 from .halo_theory import HaloTheory
 
@@ -209,6 +209,14 @@ class DistanceCalculator:
         '''
         d = self.astropy_model.angular_diameter_distance(z).to('Mpc').value
         return d * self.hubble
+    
+    def angular_diameter_per_arcsec_at(self, z: np.ndarray) -> np.ndarray:
+        '''
+        Return in [Mpc/h].
+        '''
+        d_A = self.angular_diameter_at(z)
+        theta = deg_to_rad(arcsec_to_deg(1.0))
+        return d_A * theta
     
     def luminosity_at(self, z: np.ndarray) -> np.ndarray:
         '''
