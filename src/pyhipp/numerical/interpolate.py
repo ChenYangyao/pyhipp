@@ -30,6 +30,16 @@ def bisearch(x_sorted: np.ndarray, x_dst: numbers.Real) -> int:
             l = c
     return l
 
+@njit
+def bisearch_array(x_sorted: np.ndarray, x_dst: np.ndarray) -> np.ndarray:
+    '''
+    Vectorized version of bisearch().
+    '''
+    idx = np.empty(x_dst.size, dtype=np.int64)
+    for i, _x_dst in enumerate(x_dst):
+        idx[i] = bisearch(x_sorted, _x_dst)
+    return idx
+
 
 @njit
 def bisearch_nearest(x_sorted: np.ndarray, x_dst: numbers.Real) -> int:
@@ -120,6 +130,9 @@ def bisearch_interp_2d(x1_sorted: np.ndarray, x2_sorted: np.ndarray,
     y_ll, y_lr, y_rl, y_rr = y[l1, l2], y[l1, r2], y[r1, l2], y[r1, r2]
     w_ll, w_lr, w_rl, w_rr = w1_l * w2_l, w1_l * w2_r, w1_r * w2_l, w1_r * w2_r
     return y_ll * w_ll + y_lr * w_lr + y_rl * w_rl + y_rr * w_rr
+
+
+
 
 @jitclass
 class Linear:
