@@ -14,7 +14,19 @@ full source tree, which we will continue to complete.
 
 To install `pyhipp` and automatically handle the dependencies, use:
 ```bash
-pip install pyhipp
+$ pip install pyhipp
+```
+
+**Dependencies**
+
+`pyhipp` depends on an GSL (GNU Scientific Library) installation. If you do not
+have it installed, you can install it via conda:
+```bash
+$ conda install gsl
+```
+Alternatively, in Linux distributions such as Ubuntu, you can install it via the package manager:
+```bash
+$ sudo apt-get install libgsl-dev
 ```
 
 ## Usage 
