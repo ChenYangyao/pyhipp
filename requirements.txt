@@ -12,3 +12,4 @@ jupyter
 numba
 flake8
 pytest
+Corrfunc
