@@ -11,6 +11,21 @@ class Axes:
     def __init__(self, ax: plot.Axes) -> None:
         self.ax = ax
 
+    def set_scale(self, fn_foward: Callable, fn_backward: Callable, axis='x'):
+        fns = fn_foward, fn_backward
+        if axis == 'x':
+            call = self.ax._raw.set_xscale
+        elif axis == 'y':
+            call = self.ax._raw.set_yscale
+        else:
+            raise ValueError(f'Invalid value: {axis=}')
+        call('function', functions=fns)
+    
+    def set_scale_z_to_lgzp1(self, axis='x'):
+        self.set_scale(lambda z: np.log10(1.+z), 
+                       lambda lgzp1: 10.0**lgzp1 - 1., 
+                       axis=axis)
+
     def add_secondary_axis(
             self, fn_forward: Callable, fn_backward: Callable, location='top',
             ticks=None, label=None, hide_first_ticks=True, **mpl_axes_kw):
