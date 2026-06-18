@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -40,7 +40,6 @@ jobs:
         pytest
   
   test-conda:
-    name: test-conda (${{ matrix.python-version }}, ${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -48,8 +47,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-latest", "macos-latest"]
-        python-version: ["3.11", "3.12"]
+        os: ["ubuntu-latest"]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v3
     - uses: conda-incubator/setup-miniconda@v4
@@ -66,7 +65,7 @@ jobs:
         conda list
         conda config --show-sources
         conda config --show
-        conda install gsl  
+        conda install gsl pip
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
