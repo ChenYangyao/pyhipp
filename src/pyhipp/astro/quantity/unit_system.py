@@ -153,6 +153,7 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
         u_v_to_kmps = self.__conv_coef(u_v, u.km / u.s)
         u_e_to_erg = self.__conv_coef(u_e, 1.0 * u.erg)
         u_power_to_ergps = self.__conv_coef(u_power, u.erg / u.s)
+        u_accr_rate_to_msol_per_yr = u_m_to_sol / u_t_to_yr
         
         self.u_l = u_l
         self.u_t = u_t
@@ -166,11 +167,20 @@ class UnitSystem(abc.HasName, abc.HasDictRepr):
         self.u_big_hubble = u_big_hubble
         
         self.u_l_to_pc = u_l_to_pc
+        self.u_l_to_kpc = u_l_to_pc / 1.0e3
+        self.u_l_to_Mpc = u_l_to_pc / 1.0e6
+        self.u_l_to_Gpc = u_l_to_pc / 1.0e9
+        
         self.u_t_to_yr = u_t_to_yr
+        self.u_t_to_kyr = u_t_to_yr / 1.0e3
+        self.u_t_to_Myr = u_t_to_yr / 1.0e6
+        self.u_t_to_Gyr = u_t_to_yr / 1.0e9
+        
         self.u_m_to_sol = u_m_to_sol
         self.u_v_to_kmps = u_v_to_kmps
         self.u_e_to_erg = u_e_to_erg
         self.u_power_to_ergps = u_power_to_ergps
+        self.u_accr_rate_to_msol_per_yr = u_accr_rate_to_msol_per_yr
         
         self.__get_const()
         
