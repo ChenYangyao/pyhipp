@@ -30,5 +30,10 @@ def test_simple_repr():
 def test_distances():
     cosm = model.predefined['tng']
     z = [0., 1., 2., 3., 4.]
-    d = cosm.distances.comoving_at(z)   # => [0., 2300.371, 3597.988, ...]
-    print(d)        
+    d = cosm.distances.comoving_at(z)   
+    # => [0., 2300.371, 3597.988, ...]
+    print('d_c=', d)        
+    
+    d = cosm.distances.angular_diameter_per_arcsec_at(z)
+    # => [0.        , 0.00557626, 0.00581451, 0.00534465, 0.00482059]
+    print('diameter per arcsec', d)
